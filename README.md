@@ -7,7 +7,7 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 - **Playback control**: Play, pause, skip songs
 - **Volume control**: Adjust volume from 0 to 100%
 - **Music search**: Search for songs, artists, and albums
-- **Playlist management**: List and play your playlists
+- **Playlist management**: List, rename and clear your playlists
 - **Integration with Claude**: Use natural commands to control your music
 
 ## 📋 Requirements
