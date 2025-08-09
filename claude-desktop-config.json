@@ -1,0 +1,25 @@
+{
+	"mcpServers": {
+		"weather": {
+			"command": "uv",
+			"args": [
+				"--directory",
+				"Z:\\projects\\mcp\\weather",
+				"run",
+				"weather.py"
+			]
+		},
+		"spotify-player": {
+			"command": "C:/Users/Victor/AppData/Local/Programs/Python/Python311/python.exe",
+			"args": ["Z:/projects/mcp/mcp-spotify-player/start_mcp_server.py"],
+			"cwd": "Z:/projects/mcp/mcp-spotify-player",
+			"env": {
+				"SPOTIFY_CLIENT_ID": "092f6a7489ab4ff4bae1e51ff8972d8b",
+				"SPOTIFY_CLIENT_SECRET": "2eb1c9954a3544d3980f69561a2112d1",
+				"SPOTIFY_REDIRECT_URI": "http://127.0.0.1:8000/auth/callback",
+				"PYTHONPATH": "Z:/projects/mcp/mcp-spotify-player"
+			},
+			"description": "Servidor MCP para controlar Spotify desde Claude"
+		}
+	}
+} 
