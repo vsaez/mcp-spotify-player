@@ -206,16 +206,42 @@ class SpotifyController:
                         uri=playlist['uri']
                     )
                     playlist_list.append(playlist_info.dict())
-                
+
                 return {
-                    "success": True, 
+                    "success": True,
                     "playlists": playlist_list,
                     "total_playlists": playlists.get('total', 0)
                 }
             return {"success": False, "message": "Could not get playlists"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
-    
+
+    def create_playlist(
+        self,
+        playlist_name: str,
+        description: str = "",
+        public: bool = False,
+    ) -> Dict[str, Any]:
+        """Create a new playlist. Playlists are private by default."""
+        logger.info(
+            f"DEBUG: spotify_controller : Creating playlist with name {playlist_name}"
+        )
+        try:
+            result = self.client.create_playlist(playlist_name, description, public)
+            if result:
+                playlist_info = PlaylistInfo(
+                    id=result.get('id', ''),
+                    name=result.get('name', playlist_name),
+                    description=result.get('description'),
+                    owner=result.get('owner', {}).get('display_name', ''),
+                    track_count=result.get('tracks', {}).get('total', 0),
+                    uri=result.get('uri', ''),
+                )
+                return {"success": True, "playlist": playlist_info.dict()}
+            return {"success": False, "message": "Could not create playlist"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
     def is_authenticated(self) -> bool:
         """Checks if the user is authenticated"""
         try:
