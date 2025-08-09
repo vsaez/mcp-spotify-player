@@ -253,6 +253,7 @@ class MCPServer:
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
                                  "set_volume", "get_current_playing", "get_playback_state", "get_playlist_tracks",
                                  "rename_playlist"]:
+
                     logger.info(f"Checking authentication for {tool_name}")
                     if not self.controller.is_authenticated():
                         logger.warning(f"Not authenticated for {tool_name}")
@@ -447,6 +448,7 @@ class MCPServer:
                         return "No tracks found in the playlist"
                 else:
                     return f"Error fetching playlist tracks: {result.get('message', 'Unknown error')}"
+
             elif tool_name == "rename_playlist":
                 logger.info(f"DEBUG: mcp_stdio_server : Renaming playlist with id {arguments.get('playlist_id')}")
                 playlist_id = arguments.get("playlist_id")
@@ -463,6 +465,7 @@ class MCPServer:
                         return f"Error renaming playlist: {result.get('message', 'Unknown error')}"
                 else:
                     return result
+
 
             else:
                 raise ValueError(f"Tool '{tool_name}' not supported")
