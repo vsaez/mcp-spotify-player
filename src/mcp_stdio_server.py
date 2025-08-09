@@ -15,12 +15,13 @@ from src.spotify_controller import SpotifyController
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class MCPServer:
     def __init__(self):
         self.config = Config()
         self.controller = SpotifyController()
         self.request_id = 0
-        
+
         # MCP Manifest
         self.manifest = {
             "schema_url": "https://json-schema.org/draft/2020-12/schema",
@@ -45,15 +46,15 @@ class MCPServer:
                             },
                             "playlist_name": {
                                 "type": "string",
-                                  "description": "Name of the playlist to play"
+                                "description": "Name of the playlist to play"
                             },
                             "track_uri": {
                                 "type": "string",
-                                  "description": "Specific track URI"
+                                "description": "Specific track URI"
                             },
                             "artist_uri": {
                                 "type": "string",
-                                  "description": "Specific artist URI"
+                                "description": "Specific artist URI"
                             }
                         }
                     }
@@ -122,20 +123,20 @@ class MCPServer:
                         "properties": {
                             "query": {
                                 "type": "string",
-                                  "description": "Search term"
+                                "description": "Search term"
                             },
                             "search_type": {
                                 "type": "string",
                                 "enum": ["track", "artist", "album"],
                                 "default": "track",
-                                  "description": "Search type"
+                                "description": "Search type"
                             },
                             "limit": {
                                 "type": "integer",
                                 "minimum": 1,
                                 "maximum": 50,
                                 "default": 10,
-                                  "description": "Maximum number of results"
+                                "description": "Maximum number of results"
                             }
                         },
                         "required": ["query"]
@@ -151,19 +152,11 @@ class MCPServer:
                 },
                 {
                     "name": "get_playlist_tracks",
-<<<<<<< HEAD
-                    "description": "Obtiene las canciones de una playlist dada",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "playlist_id": {"type": "string", "description": "ID de la playlist"},
-=======
                     "description": "Retrieve tracks from a given playlist",
                     "inputSchema": {
                         "type": "object",
                         "properties": {
                             "playlist_id": {"type": "string", "description": "Playlist ID"},
->>>>>>> 722939547f9251c7c92d98116d41467c5a817b1d
                             "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20}
                         },
                         "required": ["playlist_id"]
@@ -184,7 +177,7 @@ class MCPServer:
         # Handle the case where request_id is None
         if request_id is None:
             return  # Do not send a response for notifications without ID
-        
+
         error_response = {
             "jsonrpc": "2.0",
             "id": request_id,
@@ -234,27 +227,20 @@ class MCPServer:
             else:
                 # Format: {"name": "...", "arguments": {...}}
                 calls = [{"name": params.get("name"), "arguments": params.get("arguments", {})}]
-            
+
             results = []
-            
+
             for call in calls:
                 tool_name = call.get("name")
                 arguments = call.get("arguments", {})
-                
+
                 if not tool_name:
                     continue
-                
-<<<<<<< HEAD
-                # Verificar autenticación para comandos que la requieren
-                if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous", 
-                               "set_volume", "get_current_playing", "get_playback_state","get_playlist_tracks"]:
-                    logger.info(f"Verificando autenticación para {tool_name}")
-=======
+
                 # Check authentication for commands that require it
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
-                               "set_volume", "get_current_playing", "get_playback_state","get_playlist_tracks"]:
+                                 "set_volume", "get_current_playing", "get_playback_state", "get_playlist_tracks"]:
                     logger.info(f"Checking authentication for {tool_name}")
->>>>>>> 722939547f9251c7c92d98116d41467c5a817b1d
                     if not self.controller.is_authenticated():
                         logger.warning(f"Not authenticated for {tool_name}")
                         results.append({
@@ -269,7 +255,7 @@ class MCPServer:
                         continue
                     else:
                         logger.info(f"Authenticated successfully for {tool_name}")
-                
+
                 # Execute the command
                 logger.info(f"Executing {tool_name} with arguments: {arguments}")
                 result = self.execute_tool(tool_name, arguments)
@@ -300,7 +286,7 @@ class MCPServer:
                 }
 
             self.send_response(response)
-            
+
         except Exception as e:
             logger.error(f"Error executing tool: {str(e)}")
             self.send_error(request_id, -32603, f"Internal error: {str(e)}")
@@ -319,28 +305,28 @@ class MCPServer:
                     return f"{result.get('message', 'Playback started')}"
                 else:
                     return f"{result.get('message', 'Could not play music')}"
-            
+
             elif tool_name == "pause_music":
                 result = self.controller.pause_music()
                 if result.get('success'):
                     return f"{result.get('message', 'Playback paused')}"
                 else:
                     return f"{result.get('message', 'Could not pause')}"
-            
+
             elif tool_name == "skip_next":
                 result = self.controller.skip_next()
                 if result.get('success'):
                     return f"{result.get('message', 'Skipping to the next song')}"
                 else:
                     return f"{result.get('message', 'Could not skip')}"
-            
+
             elif tool_name == "skip_previous":
                 result = self.controller.skip_previous()
                 if result.get('success'):
                     return f"{result.get('message', 'Skipping to the previous song')}"
                 else:
                     return f"{result.get('message', 'Could not skip')}"
-            
+
             elif tool_name == "set_volume":
                 volume = arguments.get("volume_percent")
                 if volume is None:
@@ -350,7 +336,7 @@ class MCPServer:
                     return f"{result.get('message', f'Volume set to {volume}%')}"
                 else:
                     return f"{result.get('message', 'Could not change volume')}"
-            
+
             elif tool_name == "get_current_playing":
                 result = self.controller.get_current_playing()
                 if result.get('success'):
@@ -366,7 +352,7 @@ class MCPServer:
                         return "No music is currently playing"
                 else:
                     return f"Could not retrieve information: {result.get('message', 'Unknown error')}"
-            
+
             elif tool_name == "get_playback_state":
                 result = self.controller.get_playback_state()
                 if result.get('success'):
@@ -384,7 +370,7 @@ class MCPServer:
                         return f"No music playing | Volume: {volume}% | Device: {device}"
                 else:
                     return f"Could not retrieve state: {result.get('message', 'Unknown error')}"
-            
+
             elif tool_name == "search_music":
                 query = arguments.get("query")
                 if not query:
@@ -406,7 +392,7 @@ class MCPServer:
                         return f"No songs found for '{query}'"
                 else:
                     return f"Search error: {result.get('message', 'Unknown error')}"
-            
+
             elif tool_name == "get_playlists":
                 result = self.controller.get_playlists()
                 if result.get('success'):
@@ -415,13 +401,10 @@ class MCPServer:
                     if playlists:
                         playlist_list = []
                         for i, playlist in enumerate(playlists, 1):
-<<<<<<< HEAD
-                            playlist_list.append(f"{i}. {playlist.get('name', 'Desconocida')} ({playlist.get('track_count', 0)} canciones)")
-                            playlist_list.append(f"{i}. {playlist.get('name', 'Desconocida')} ({playlist.get('track_count', 0)} canciones) - ID: {playlist.get('id')}")
-                        return f"Encontradas {len(playlists)} playlists (de {total} total):\n" + "\n".join(playlist_list)
-=======
-                            playlist_list.append(f"{i}. {playlist.get('name', 'Unknown')} ({playlist.get('track_count', 0)} songs)")
-                            playlist_list.append(f"{i}. {playlist.get('name', 'Unknown')} ({playlist.get('track_count', 0)} songs) - ID: {playlist.get('id')}")
+                            playlist_list.append(
+                                f"{i}. {playlist.get('name', 'Unknown')} ({playlist.get('track_count', 0)} songs)")
+                            playlist_list.append(
+                                f"{i}. {playlist.get('name', 'Unknown')} ({playlist.get('track_count', 0)} songs) - ID: {playlist.get('id')}")
                         return f"Found {len(playlists)} playlists (of {total} total):\n" + "\n".join(playlist_list)
                     else:
                         return "No playlists found"
@@ -445,43 +428,16 @@ class MCPServer:
                         track_list = []
                         for i, track in enumerate(tracks[:5], 1):
                             track_list.append(f"{i}. {track.get('name', 'Unknown')} - {track.get('artist', 'Unknown')}")
-                        return f"Found {len(tracks)} tracks in the playlist (of {total} total):\n" + "\n".join(track_list)
->>>>>>> 722939547f9251c7c92d98116d41467c5a817b1d
+                        return f"Found {len(tracks)} tracks in the playlist (of {total} total):\n" + "\n".join(
+                            track_list)
                     else:
                         return "No tracks found in the playlist"
                 else:
-<<<<<<< HEAD
-                    return f"Error obteniendo playlists: {result.get('message', 'Error desconocido')}"
-            elif tool_name == "get_playlist_tracks":
-                playlist_id = arguments.get("playlist_id")
-                if not playlist_id:
-                    raise ValueError("playlist_id is required")
-
-                # Validdate if playlist_id is a valid Spotify ID
-                if playlist_id.isdigit() and len(playlist_id) < 10:  # Most likely is an index not a real ID
-                    return "Error: The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
-
-                limit = arguments.get("limit", 20)
-                result = self.controller.get_playlist_tracks(playlist_id, limit)
-                if result.get('success'):
-                    tracks = result.get('tracks', [])
-                    total = result.get('total_tracks', 0)
-                    if tracks:
-                        track_list = []
-                        for i, track in enumerate(tracks[:5], 1):
-                            track_list.append(f"{i}. {track.get('name', 'Desconocida')} - {track.get('artist', 'Desconocido')}")
-                        return f"Encontradas {len(tracks)} canciones en la playlist (de {total} total):\n" + "\n".join(track_list)
-                    else:
-                        return f"No se encontraron canciones en la playlist"
-                else:
-                    return f"Error obteniendo canciones de la playlist: {result.get('message', 'Error desconocido')}"
-=======
                     return f"Error fetching playlist tracks: {result.get('message', 'Unknown error')}"
->>>>>>> 722939547f9251c7c92d98116d41467c5a817b1d
-            
+
             else:
                 raise ValueError(f"Tool '{tool_name}' not supported")
-                
+
         except Exception as e:
             logger.error(f"Error executing {tool_name}: {str(e)}")
             return f"Error: {str(e)}"
@@ -489,23 +445,23 @@ class MCPServer:
     def run(self):
         """Run the MCP server"""
         logger.info("Starting MCP Spotify Player server...")
-        
+
         try:
             while True:
                 # Read line from stdin
                 line = sys.stdin.readline()
                 if not line:
                     break
-                
+
                 try:
                     # Parse JSON-RPC
                     request = json.loads(line.strip())
                     method = request.get("method")
                     request_id = request.get("id")
                     params = request.get("params", {})
-                    
+
                     logger.info(f"Received: {method}")
-                    
+
                     # Handle MCP methods
                     if method == "initialize":
                         self.handle_initialize(request_id, params)
@@ -525,18 +481,19 @@ class MCPServer:
                         logger.warning(f"Unsupported method: {method}")
                         if request_id is not None:
                             self.send_error(request_id, -32601, f"Method '{method}' not supported")
-                        
+
                 except json.JSONDecodeError as e:
                     logger.error(f"Error parsing JSON: {e}")
                     continue
                 except Exception as e:
                     logger.error(f"Error processing request: {e}")
                     continue
-                    
+
         except KeyboardInterrupt:
             logger.info("Server stopped by the user")
         except Exception as e:
             logger.error(f"Server error: {e}")
+
 
 if __name__ == "__main__":
     server = MCPServer()
