@@ -148,6 +148,18 @@ class MCPServer:
                         "type": "object",
                         "properties": {}
                     }
+                },
+                {
+                    "name": "get_playlist_tracks",
+                    "description": "Obtiene las canciones de una playlist dada",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "playlist_id": {"type": "string", "description": "ID de la playlist"},
+                            "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20}
+                        },
+                        "required": ["playlist_id"]
+                    }
                 }
             ]
         }
@@ -226,7 +238,7 @@ class MCPServer:
                 
                 # Verificar autenticación para comandos que la requieren
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous", 
-                               "set_volume", "get_current_playing", "get_playback_state"]:
+                               "set_volume", "get_current_playing", "get_playback_state","get_playlist_tracks"]:
                     logger.info(f"Verificando autenticación para {tool_name}")
                     if not self.controller.is_authenticated():
                         logger.warning(f"No autenticado para {tool_name}")
@@ -387,14 +399,37 @@ class MCPServer:
                     total = result.get('total_playlists', 0)
                     if playlists:
                         playlist_list = []
-                        #for i, playlist in enumerate(playlists[:10], 1):
                         for i, playlist in enumerate(playlists, 1):
                             playlist_list.append(f"{i}. {playlist.get('name', 'Desconocida')} ({playlist.get('track_count', 0)} canciones)")
+                            playlist_list.append(f"{i}. {playlist.get('name', 'Desconocida')} ({playlist.get('track_count', 0)} canciones) - ID: {playlist.get('id')}")
                         return f"Encontradas {len(playlists)} playlists (de {total} total):\n" + "\n".join(playlist_list)
                     else:
                         return f"No se encontraron playlists"
                 else:
                     return f"Error obteniendo playlists: {result.get('message', 'Error desconocido')}"
+            elif tool_name == "get_playlist_tracks":
+                playlist_id = arguments.get("playlist_id")
+                if not playlist_id:
+                    raise ValueError("playlist_id is required")
+
+                # Validdate if playlist_id is a valid Spotify ID
+                if playlist_id.isdigit() and len(playlist_id) < 10:  # Most likely is an index not a real ID
+                    return "Error: The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
+
+                limit = arguments.get("limit", 20)
+                result = self.controller.get_playlist_tracks(playlist_id, limit)
+                if result.get('success'):
+                    tracks = result.get('tracks', [])
+                    total = result.get('total_tracks', 0)
+                    if tracks:
+                        track_list = []
+                        for i, track in enumerate(tracks[:5], 1):
+                            track_list.append(f"{i}. {track.get('name', 'Desconocida')} - {track.get('artist', 'Desconocido')}")
+                        return f"Encontradas {len(tracks)} canciones en la playlist (de {total} total):\n" + "\n".join(track_list)
+                    else:
+                        return f"No se encontraron canciones en la playlist"
+                else:
+                    return f"Error obteniendo canciones de la playlist: {result.get('message', 'Error desconocido')}"
             
             else:
                 raise ValueError(f"Herramienta '{tool_name}' no soportada")
