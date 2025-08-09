@@ -248,3 +248,14 @@ class SpotifyClient:
         )
         sys.stderr.write(f"DEBUG: Response renaming playlist by id {playlist_id}: {result}\n")
         return result is not None
+
+    def clear_playlist(self, playlist_id: str) -> bool:
+        """Remove all tracks from a playlist"""
+        logger.info(f"DEBUG: spotify_client -- Clearing playlist with id {playlist_id}")
+        result = self._make_request(
+            'PUT',
+            f'/playlists/{playlist_id}/tracks',
+            json={"uris": []}
+        )
+        sys.stderr.write(f"DEBUG: Response clearing playlist by id {playlist_id}: {result}\n")
+        return result is not None
