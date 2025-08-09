@@ -180,7 +180,8 @@ class MCPServer:
                     "inputSchema": {
                         "type": "object",
                         "properties": {
-                            "playlist_name": {"type": "string", "description": "Name for the new playlist"}
+                            "playlist_name": {"type": "string", "description": "Name for the new playlist"},
+                            "description": {"type": "string", "description": "Optional playlist description"}
                         },
                         "required": ["playlist_name"]
                     }
@@ -481,7 +482,8 @@ class MCPServer:
                 playlist_name = arguments.get("playlist_name")
                 if not playlist_name:
                     raise ValueError("playlist_name is required")
-                result = self.controller.create_playlist(playlist_name)
+                description = arguments.get("description", "")
+                result = self.controller.create_playlist(playlist_name, description)
                 if result.get('success'):
                     playlist = result.get('playlist', {})
                     return f"Playlist '{playlist.get('name', playlist_name)}' created successfully"
