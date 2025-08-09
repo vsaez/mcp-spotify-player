@@ -206,16 +206,41 @@ class SpotifyController:
                         uri=playlist['uri']
                     )
                     playlist_list.append(playlist_info.dict())
-                
+
                 return {
-                    "success": True, 
+                    "success": True,
                     "playlists": playlist_list,
                     "total_playlists": playlists.get('total', 0)
                 }
             return {"success": False, "message": "Could not get playlists"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
-    
+
+    def create_playlist(
+        self,
+        playlist_name: str,
+        description: str = "",
+    ) -> Dict[str, Any]:
+        """Create a new private playlist."""
+        logger.info(
+            f"DEBUG: spotify_controller : Creating playlist with name {playlist_name}"
+        )
+        try:
+            result = self.client.create_playlist(playlist_name, description, False)
+            if result:
+                playlist_info = PlaylistInfo(
+                    id=result.get('id', ''),
+                    name=result.get('name', playlist_name),
+                    description=result.get('description'),
+                    owner=result.get('owner', {}).get('display_name', ''),
+                    track_count=result.get('tracks', {}).get('total', 0),
+                    uri=result.get('uri', ''),
+                )
+                return {"success": True, "playlist": playlist_info.dict()}
+            return {"success": False, "message": "Could not create playlist"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
     def is_authenticated(self) -> bool:
         """Checks if the user is authenticated"""
         try:
@@ -265,6 +290,19 @@ class SpotifyController:
             if result:
                 return {"success": True, "message": "Playlist renamed successfully"}
             return {"success": False, "message": "Could not rename the playlist"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
+    def clear_playlist(self, playlist_id: str) -> Dict[str, Any]:
+        """Remove all tracks from a playlist"""
+        logger.info(f"DEBUG: spotify_controller : Clearing playlist with id {playlist_id}")
+        try:
+            if not self._validate_spotify_id(playlist_id):
+                return {'success': False, 'message': 'Invalid playlist ID. It must be a valid Spotify ID.'}
+            result = self.client.clear_playlist(playlist_id)
+            if result:
+                return {"success": True, "message": "Playlist cleared successfully"}
+            return {"success": False, "message": "Could not clear the playlist"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 

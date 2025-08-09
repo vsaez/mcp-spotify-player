@@ -164,6 +164,18 @@ MCP_MANIFEST = {
                 "type": "object",
                 "properties": {}
             }
+        },
+        {
+            "name": "create_playlist",
+            "description": "Create a new playlist in the user's library",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "playlist_name": {"type": "string", "description": "Name of the new playlist"},
+                    "description": {"type": "string", "description": "Optional playlist description"}
+                },
+                "required": ["playlist_name"]
+            }
         }
     ]
 }
@@ -191,8 +203,8 @@ async def handle_mcp_request(request: Request):
         mcp_request = MCPRequest(**body)
         
         # Verify authentication for commands that require it
-        if mcp_request.method in ["play_music", "pause_music", "skip_next", "skip_previous", 
-                                 "set_volume", "get_current_playing", "get_playback_state"]:
+        if mcp_request.method in ["play_music", "pause_music", "skip_next", "skip_previous",
+                                 "set_volume", "get_current_playing", "get_playback_state", "create_playlist"]:
             if not controller.is_authenticated():
                 return JSONResponse(
                     status_code=401,
@@ -277,7 +289,14 @@ async def process_mcp_command(request: MCPRequest) -> Dict[str, Any]:
     
     elif method == "get_playlists":
         return controller.get_playlists()
-    
+
+    elif method == "create_playlist":
+        playlist_name = params.get("playlist_name")
+        if not playlist_name:
+            raise ValueError("playlist_name is required")
+        description = params.get("description", "")
+        return controller.create_playlist(playlist_name, description)
+
     else:
         raise ValueError(f"Method '{method}' not supported")
 
