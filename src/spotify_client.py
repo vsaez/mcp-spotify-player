@@ -1,3 +1,5 @@
+import logging
+
 import requests
 import json
 import time
@@ -5,6 +7,10 @@ import os
 import sys
 from typing import Optional, Dict, Any, List
 from src.config import Config
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class SpotifyClient:
     def __init__(self):
@@ -230,4 +236,15 @@ class SpotifyClient:
     def get_playlist_tracks(self, playlist_id: str, limit: int = 20) -> Optional[Dict[str, Any]]:
         """Gets songs from a playlist"""
         params = {'limit': limit}
-        return self._make_request('GET', f'/playlists/{playlist_id}/tracks', params=params) 
+        return self._make_request('GET', f'/playlists/{playlist_id}/tracks', params=params)
+
+    def rename_playlist(self, playlist_id: str,playlist_name: str) -> bool:
+        """Rename a playlist from the user's library"""
+        logger.info(f"DEBUG: spotify_client -- Renaming playlist with id {playlist_id}")
+        result = self._make_request(
+            'PUT',
+            f'/playlists/{playlist_id}',
+            json={"name": playlist_name}
+        )
+        sys.stderr.write(f"DEBUG: Response renaming playlist by id {playlist_id}: {result}\n")
+        return result is not None
