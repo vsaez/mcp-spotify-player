@@ -175,14 +175,14 @@ class MCPServer:
                     }
                 },
                 {
-                    "name": "clear_playlist",
-                    "description": "Remove all tracks from a Spotify playlist",
+                    "name": "create_playlist",
+                    "description": "Create a new Spotify playlist with the given name",
                     "inputSchema": {
                         "type": "object",
                         "properties": {
-                            "playlist_id": {"type": "string", "description": "Spotify playlist ID"}
+                            "playlist_name": {"type": "string", "description": "Name for the new playlist"}
                         },
-                        "required": ["playlist_id"]
+                        "required": ["playlist_name"]
                     }
                 }
             ]
@@ -263,7 +263,7 @@ class MCPServer:
                 # Check authentication for commands that require it
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
                                  "set_volume", "get_current_playing", "get_playback_state", "get_playlist_tracks",
-                                 "rename_playlist", "clear_playlist"]:
+                                 "rename_playlist", "create_playlist"]:
 
                     logger.info(f"Checking authentication for {tool_name}")
                     if not self.controller.is_authenticated():
@@ -477,20 +477,16 @@ class MCPServer:
                 else:
                     return result
 
-
-            elif tool_name == "clear_playlist":
-                playlist_id = arguments.get("playlist_id")
-                if not playlist_id:
-                    raise ValueError("playlist_id is required")
-
-                result = self.controller.clear_playlist(playlist_id)
-                if isinstance(result, dict):
-                    if result.get('success'):
-                        return f"{result.get('message', 'Playlist cleared successfully')}"
-                    else:
-                        return f"Error clearing playlist: {result.get('message', 'Unknown error')}"
+            elif tool_name == "create_playlist":
+                playlist_name = arguments.get("playlist_name")
+                if not playlist_name:
+                    raise ValueError("playlist_name is required")
+                result = self.controller.create_playlist(playlist_name)
+                if result.get('success'):
+                    playlist = result.get('playlist', {})
+                    return f"Playlist '{playlist.get('name', playlist_name)}' created successfully"
                 else:
-                    return result
+                    return f"Error creating playlist: {result.get('message', 'Unknown error')}"
 
             else:
                 raise ValueError(f"Tool '{tool_name}' not supported")
