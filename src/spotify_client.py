@@ -232,6 +232,47 @@ class SpotifyClient:
         """Gets the user's playlists"""
         params = {'limit': limit}
         return self._make_request('GET', '/me/playlists', params=params)
+
+    def create_playlist(
+        self,
+        playlist_name: str,
+        description: str = "",
+        public: bool = False,
+    ) -> Optional[Dict[str, Any]]:
+        """Create a new playlist for the current user.
+
+        Playlists are private by default unless ``public`` is explicitly set to
+        ``True``.
+
+        Args:
+            playlist_name: Name of the playlist to create.
+            description: Optional playlist description.
+            public: Whether the playlist should be public. Defaults to ``False``.
+
+        Returns:
+            The created playlist data if successful, otherwise ``None``.
+        """
+
+        logger.info(
+            f"DEBUG: spotify_client -- Creating playlist with name {playlist_name}"
+        )
+
+        user_profile = self._make_request('GET', '/me')
+        if not user_profile or 'id' not in user_profile:
+            return None
+
+        payload = {
+            'name': playlist_name,
+            'description': description,
+            'public': public,
+        }
+        result = self._make_request(
+            'POST', f"/users/{user_profile['id']}/playlists", json=payload
+        )
+        sys.stderr.write(
+            f"DEBUG: Response creating playlist {playlist_name}: {result}\n"
+        )
+        return result
     
     def get_playlist_tracks(self, playlist_id: str, limit: int = 20) -> Optional[Dict[str, Any]]:
         """Gets songs from a playlist"""
