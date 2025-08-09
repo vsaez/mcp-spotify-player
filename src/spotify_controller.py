@@ -2,6 +2,12 @@ from typing import Optional, Dict, Any, List
 from src.spotify_client import SpotifyClient
 from src.mcp_models import TrackInfo, PlaybackState, SearchResult, PlaylistInfo
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 class SpotifyController:
     def __init__(self):
         self.client = SpotifyClient()
@@ -248,6 +254,20 @@ class SpotifyController:
             return {"success": False, "message": "Could not get playlist tracks"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
+
+    def rename_playlist(self, playlist_id: str, playlist_name: str) -> Dict[str, Any]:
+        """Rename a playlist from the user's library"""
+        logger.info(f"DEBUG: spotify_controller : Renaming playlist with id {playlist_id}")
+        try:
+            if not self._validate_spotify_id(playlist_id):
+                return {'success': False, 'message': 'Invalid playlist ID. It must be a valid Spotify ID.'}
+            result = self.client.rename_playlist(playlist_id,playlist_name)
+            if result:
+                return {"success": True, "message": "Playlist renamed successfully"}
+            return {"success": False, "message": "Could not rename the playlist"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
 
     def _validate_spotify_id(self, id_string: str) -> bool:
         """Validates if the string it's a valid Spotify ID"""

@@ -7,7 +7,7 @@ Implements the MCP protocol over JSON-RPC for communication with Cursor
 import json
 import sys
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from src.config import Config
 from src.spotify_controller import SpotifyController
 
@@ -161,6 +161,18 @@ class MCPServer:
                         },
                         "required": ["playlist_id"]
                     }
+                },
+                {
+                    "name": "rename_playlist",
+                    "description": "Rename a Spotify playlist by its ID to a new name",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "playlist_id": {"type": "string", "description": "Spotify playlist ID"},
+                            "new_name": {"type": "string", "description": "New name for the playlist"}
+                        },
+                        "required": ["playlist_id", "new_name"]
+                    }
                 }
             ]
         }
@@ -239,7 +251,8 @@ class MCPServer:
 
                 # Check authentication for commands that require it
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
-                                 "set_volume", "get_current_playing", "get_playback_state", "get_playlist_tracks"]:
+                                 "set_volume", "get_current_playing", "get_playback_state", "get_playlist_tracks",
+                                 "rename_playlist"]:
                     logger.info(f"Checking authentication for {tool_name}")
                     if not self.controller.is_authenticated():
                         logger.warning(f"Not authenticated for {tool_name}")
@@ -434,6 +447,22 @@ class MCPServer:
                         return "No tracks found in the playlist"
                 else:
                     return f"Error fetching playlist tracks: {result.get('message', 'Unknown error')}"
+            elif tool_name == "rename_playlist":
+                logger.info(f"DEBUG: mcp_stdio_server : Renaming playlist with id {arguments.get('playlist_id')}")
+                playlist_id = arguments.get("playlist_id")
+                new_name = arguments.get("new_name")
+                if not playlist_id:
+                    raise ValueError("playlist_id is required")
+
+                # Validate if playlist_id is a valid Spotify ID
+                result = self.controller.rename_playlist(playlist_id, new_name)
+                if isinstance(result, dict):
+                    if result.get('success'):
+                        return f"{result.get('message', 'Playlist renamed successfully')}"
+                    else:
+                        return f"Error renaming playlist: {result.get('message', 'Unknown error')}"
+                else:
+                    return result
 
             else:
                 raise ValueError(f"Tool '{tool_name}' not supported")
