@@ -171,7 +171,8 @@ MCP_MANIFEST = {
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "playlist_name": {"type": "string", "description": "Name of the new playlist"}
+                    "playlist_name": {"type": "string", "description": "Name of the new playlist"},
+                    "description": {"type": "string", "description": "Optional playlist description"}
                 },
                 "required": ["playlist_name"]
             }
@@ -293,7 +294,8 @@ async def process_mcp_command(request: MCPRequest) -> Dict[str, Any]:
         playlist_name = params.get("playlist_name")
         if not playlist_name:
             raise ValueError("playlist_name is required")
-        return controller.create_playlist(playlist_name)
+        description = params.get("description", "")
+        return controller.create_playlist(playlist_name, description)
 
     else:
         raise ValueError(f"Method '{method}' not supported")

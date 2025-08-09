@@ -34,7 +34,7 @@ class Config:
         "user-top-read",                   # Read user's favorite songs/artists
         "playlist-read-private",           # Read user's private playlists
         "playlist-read-collaborative",     # Read collaborative playlists
-        "playlist-modify-private",        # Modify private playlists
+        "playlist-modify-private",         # Modify private playlists
         "user-library-read",               # Read user's library (likes)
         "user-library-modify"              # Modify user's library (like/unlike)
-    ] 
+    ]
