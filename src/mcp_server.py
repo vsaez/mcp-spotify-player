@@ -164,6 +164,22 @@ MCP_MANIFEST = {
                 "type": "object",
                 "properties": {}
             }
+        },
+        {
+            "name": "add_tracks_to_playlist",
+            "description": "Add tracks to a Spotify playlist by its ID",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "playlist_id": {"type": "string", "description": "Spotify playlist ID"},
+                    "track_uris": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of track URIs to add"
+                    }
+                },
+                "required": ["playlist_id", "track_uris"]
+            }
         }
     ]
 }
@@ -191,8 +207,9 @@ async def handle_mcp_request(request: Request):
         mcp_request = MCPRequest(**body)
         
         # Verify authentication for commands that require it
-        if mcp_request.method in ["play_music", "pause_music", "skip_next", "skip_previous", 
-                                 "set_volume", "get_current_playing", "get_playback_state"]:
+        if mcp_request.method in ["play_music", "pause_music", "skip_next", "skip_previous",
+                                 "set_volume", "get_current_playing", "get_playback_state",
+                                 "add_tracks_to_playlist"]:
             if not controller.is_authenticated():
                 return JSONResponse(
                     status_code=401,
@@ -277,7 +294,13 @@ async def process_mcp_command(request: MCPRequest) -> Dict[str, Any]:
     
     elif method == "get_playlists":
         return controller.get_playlists()
-    
+    elif method == "add_tracks_to_playlist":
+        playlist_id = params.get("playlist_id")
+        track_uris = params.get("track_uris")
+        if not playlist_id or not track_uris:
+            raise ValueError("playlist_id and track_uris are required")
+        return controller.add_tracks_to_playlist(playlist_id, track_uris)
+
     else:
         raise ValueError(f"Method '{method}' not supported")
 

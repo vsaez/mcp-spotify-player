@@ -268,6 +268,19 @@ class SpotifyController:
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    def add_tracks_to_playlist(self, playlist_id: str, track_uris: List[str]) -> Dict[str, Any]:
+        """Add tracks to a playlist"""
+        try:
+            if not self._validate_spotify_id(playlist_id):
+                return {'success': False, 'message': 'Invalid playlist ID. It must be a valid Spotify ID.'}
+            if not track_uris or not all(isinstance(uri, str) and uri.startswith('spotify:track:') for uri in track_uris):
+                return {'success': False, 'message': 'Invalid track URIs. Must be valid Spotify track URIs.'}
+            result = self.client.add_tracks_to_playlist(playlist_id, track_uris)
+            if result:
+                return {'success': True, 'message': 'Tracks added successfully'}
+            return {'success': False, 'message': 'Could not add tracks to playlist'}
+        except Exception as e:
+            return {'success': False, 'message': f'Error: {str(e)}'}
 
     def _validate_spotify_id(self, id_string: str) -> bool:
         """Validates if the string it's a valid Spotify ID"""

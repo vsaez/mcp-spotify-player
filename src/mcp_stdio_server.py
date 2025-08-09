@@ -173,6 +173,22 @@ class MCPServer:
                         },
                         "required": ["playlist_id", "new_name"]
                     }
+                },
+                {
+                    "name": "add_tracks_to_playlist",
+                    "description": "Add tracks to a Spotify playlist by its ID",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "playlist_id": {"type": "string", "description": "Spotify playlist ID"},
+                            "track_uris": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "List of track URIs to add"
+                            }
+                        },
+                        "required": ["playlist_id", "track_uris"]
+                    }
                 }
             ]
         }
@@ -252,7 +268,7 @@ class MCPServer:
                 # Check authentication for commands that require it
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
                                  "set_volume", "get_current_playing", "get_playback_state", "get_playlist_tracks",
-                                 "rename_playlist"]:
+                                 "rename_playlist", "add_tracks_to_playlist"]:
 
                     logger.info(f"Checking authentication for {tool_name}")
                     if not self.controller.is_authenticated():
@@ -466,6 +482,19 @@ class MCPServer:
                 else:
                     return result
 
+            elif tool_name == "add_tracks_to_playlist":
+                playlist_id = arguments.get("playlist_id")
+                track_uris = arguments.get("track_uris")
+                if not playlist_id or not track_uris:
+                    raise ValueError("playlist_id and track_uris are required")
+                result = self.controller.add_tracks_to_playlist(playlist_id, track_uris)
+                if isinstance(result, dict):
+                    if result.get('success'):
+                        return f"{result.get('message', 'Tracks added successfully')}"
+                    else:
+                        return f"Error adding tracks: {result.get('message', 'Unknown error')}"
+                else:
+                    return result
 
             else:
                 raise ValueError(f"Tool '{tool_name}' not supported")
