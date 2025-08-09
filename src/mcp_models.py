@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any, Union
+from pydantic import field_validator
 
 class MCPRequest(BaseModel):
     """Modelo base para las peticiones MCP"""
@@ -70,13 +71,19 @@ class SearchResult(BaseModel):
     albums: List[Dict[str, Any]] = []
 
 class PlaylistInfo(BaseModel):
-    """Play list information"""
     id: str
     name: str
-    description: Optional[str] = None
-    owner: str
+    owner: Optional[Union[str, dict]] = "unknown"  # Hacerlo opcional con valor predeterminado
     track_count: int
-    uri: str
+
+    @field_validator('owner')
+    def validate_owner(cls, v):
+        if v is None:
+            return "unknown"
+        if isinstance(v, dict):
+            # Si es un objeto, extrae el ID del propietario
+            return v.get('id', 'unknown')
+        return v
 
 # Models for MCP manifest
 class MCPTool(BaseModel):
