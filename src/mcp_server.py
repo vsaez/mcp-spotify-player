@@ -166,17 +166,14 @@ MCP_MANIFEST = {
             }
         },
         {
-            "name": "clear_playlist",
-            "description": "Remove all tracks from a Spotify playlist",
+            "name": "create_playlist",
+            "description": "Create a new playlist in the user's library",
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "playlist_id": {
-                        "type": "string",
-                        "description": "Spotify playlist ID"
-                    }
+                    "playlist_name": {"type": "string", "description": "Name of the new playlist"}
                 },
-                "required": ["playlist_id"]
+                "required": ["playlist_name"]
             }
         }
     ]
@@ -206,8 +203,7 @@ async def handle_mcp_request(request: Request):
         
         # Verify authentication for commands that require it
         if mcp_request.method in ["play_music", "pause_music", "skip_next", "skip_previous",
-                                 "set_volume", "get_current_playing", "get_playback_state",
-                                 "clear_playlist"]:
+                                 "set_volume", "get_current_playing", "get_playback_state", "create_playlist"]:
             if not controller.is_authenticated():
                 return JSONResponse(
                     status_code=401,
@@ -293,11 +289,11 @@ async def process_mcp_command(request: MCPRequest) -> Dict[str, Any]:
     elif method == "get_playlists":
         return controller.get_playlists()
 
-    elif method == "clear_playlist":
-        playlist_id = params.get("playlist_id")
-        if not playlist_id:
-            raise ValueError("playlist_id is required")
-        return controller.clear_playlist(playlist_id)
+    elif method == "create_playlist":
+        playlist_name = params.get("playlist_name")
+        if not playlist_name:
+            raise ValueError("playlist_name is required")
+        return controller.create_playlist(playlist_name)
 
     else:
         raise ValueError(f"Method '{method}' not supported")

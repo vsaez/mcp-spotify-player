@@ -294,16 +294,20 @@ class SpotifyController:
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
-    def clear_playlist(self, playlist_id: str) -> Dict[str, Any]:
-        """Remove all tracks from a playlist"""
-        logger.info(f"DEBUG: spotify_controller : Clearing playlist with id {playlist_id}")
+    def create_playlist(self, playlist_name: str) -> Dict[str, Any]:
+        """Create a new playlist with the given name"""
         try:
-            if not self._validate_spotify_id(playlist_id):
-                return {'success': False, 'message': 'Invalid playlist ID. It must be a valid Spotify ID.'}
-            result = self.client.clear_playlist(playlist_id)
-            if result:
-                return {"success": True, "message": "Playlist cleared successfully"}
-            return {"success": False, "message": "Could not clear the playlist"}
+            result = self.client.create_playlist(playlist_name)
+            if result and result.get('id'):
+                return {
+                    "success": True,
+                    "playlist": {
+                        "id": result["id"],
+                        "name": result["name"],
+                        "uri": result.get("uri")
+                    }
+                }
+            return {"success": False, "message": "Could not create playlist"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
