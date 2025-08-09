@@ -217,4 +217,39 @@ class SpotifyController:
             state = self.client.get_playback_state()
             return state is not None
         except:
-            return False 
+            return False
+
+    def get_playlist_tracks(self, playlist_id: str, limit: int = 20) -> Dict[str, Any]:
+        """Gets songs from a playlist"""
+        try:
+            if not self._validate_spotify_id(playlist_id):
+                return {'success': False, 'message': 'ID de playlist inválido. Debe ser un ID de Spotify válido.'}
+
+            tracks = self.client.get_playlist_tracks(playlist_id, limit)
+            if tracks and 'items' in tracks:
+                track_list = []
+                for item in tracks['items']:
+                    track = item['track']
+                    track_info = TrackInfo(
+                        name=track['name'],
+                        artist=track['artists'][0]['name'],
+                        album=track['album']['name'],
+                        uri=track['uri'],
+                        duration_ms=track['duration_ms'],
+                        external_url=track['external_urls']['spotify']
+                    )
+                    track_list.append(track_info.dict())
+
+                return {
+                    "success": True,
+                    "tracks": track_list,
+                    "total_tracks": tracks.get('total', 0)
+                }
+            return {"success": False, "message": "Could not get playlist tracks"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
+    def _validate_spotify_id(self, id_string: str) -> bool:
+        """Validates if the string it's a valid Spotify ID"""
+        # And usual ID has 22 alphanumeric characters
+        return bool(id_string) and len(id_string) > 10 and all(c.isalnum() for c in id_string)
