@@ -173,6 +173,17 @@ class MCPServer:
                         },
                         "required": ["playlist_id", "new_name"]
                     }
+                },
+                {
+                    "name": "create_playlist",
+                    "description": "Create a new Spotify playlist with the given name",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "playlist_name": {"type": "string", "description": "Name for the new playlist"}
+                        },
+                        "required": ["playlist_name"]
+                    }
                 }
             ]
         }
@@ -252,7 +263,7 @@ class MCPServer:
                 # Check authentication for commands that require it
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
                                  "set_volume", "get_current_playing", "get_playback_state", "get_playlist_tracks",
-                                 "rename_playlist"]:
+                                 "rename_playlist", "create_playlist"]:
 
                     logger.info(f"Checking authentication for {tool_name}")
                     if not self.controller.is_authenticated():
@@ -466,6 +477,16 @@ class MCPServer:
                 else:
                     return result
 
+            elif tool_name == "create_playlist":
+                playlist_name = arguments.get("playlist_name")
+                if not playlist_name:
+                    raise ValueError("playlist_name is required")
+                result = self.controller.create_playlist(playlist_name)
+                if result.get('success'):
+                    playlist = result.get('playlist', {})
+                    return f"Playlist '{playlist.get('name', playlist_name)}' created successfully"
+                else:
+                    return f"Error creating playlist: {result.get('message', 'Unknown error')}"
 
             else:
                 raise ValueError(f"Tool '{tool_name}' not supported")

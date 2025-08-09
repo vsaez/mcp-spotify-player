@@ -238,7 +238,7 @@ class SpotifyClient:
         params = {'limit': limit}
         return self._make_request('GET', f'/playlists/{playlist_id}/tracks', params=params)
 
-    def rename_playlist(self, playlist_id: str,playlist_name: str) -> bool:
+    def rename_playlist(self, playlist_id: str, playlist_name: str) -> bool:
         """Rename a playlist from the user's library"""
         logger.info(f"DEBUG: spotify_client -- Renaming playlist with id {playlist_id}")
         result = self._make_request(
@@ -248,3 +248,11 @@ class SpotifyClient:
         )
         sys.stderr.write(f"DEBUG: Response renaming playlist by id {playlist_id}: {result}\n")
         return result is not None
+
+    def create_playlist(self, playlist_name: str) -> Optional[Dict[str, Any]]:
+        """Create a new playlist for the current user"""
+        user = self._make_request('GET', '/me')
+        if not user or 'id' not in user:
+            return None
+        data = {"name": playlist_name}
+        return self._make_request('POST', f"/users/{user['id']}/playlists", json=data)

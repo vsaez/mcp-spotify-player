@@ -268,6 +268,23 @@ class SpotifyController:
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    def create_playlist(self, playlist_name: str) -> Dict[str, Any]:
+        """Create a new playlist with the given name"""
+        try:
+            result = self.client.create_playlist(playlist_name)
+            if result and result.get('id'):
+                return {
+                    "success": True,
+                    "playlist": {
+                        "id": result["id"],
+                        "name": result["name"],
+                        "uri": result.get("uri")
+                    }
+                }
+            return {"success": False, "message": "Could not create playlist"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
 
     def _validate_spotify_id(self, id_string: str) -> bool:
         """Validates if the string it's a valid Spotify ID"""
