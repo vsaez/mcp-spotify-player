@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 class SpotifyController:
     def __init__(self):
         self.client = SpotifyClient()
+        self.playback_client = self.client.playback
+        self.playlists_client = self.client.playlists
 
     def play_music(self, query: Optional[str] = None, playlist_name: Optional[str] = None,
                    track_uri: Optional[str] = None, artist_uri: Optional[str] = None) -> Dict[str, Any]:
@@ -32,32 +34,32 @@ class SpotifyController:
 
         try:
             if track_uri:
-                result = self.client.play(uris=[track_uri])
+                result = self.playback_client.play(uris=[track_uri])
                 return handle_play_result(result, "Playing specific song")
 
             elif artist_uri:
-                result = self.client.play(context_uri=artist_uri)
+                result = self.playback_client.play(context_uri=artist_uri)
                 return handle_play_result(result, "Playing artist")
 
             elif playlist_name:
-                playlists = self.client.get_user_playlists()
+                playlists = self.playlists_client.get_user_playlists()
                 if playlists and 'items' in playlists:
                     for playlist in playlists['items']:
                         if playlist['name'].lower() == playlist_name.lower():
-                            result = self.client.play(context_uri=playlist['uri'])
+                            result = self.playback_client.play(context_uri=playlist['uri'])
                             return handle_play_result(result, f"Playing playlist: {playlist['name']}")
                     return {"success": False, "message": f"Playlist '{playlist_name}' not found"}
 
             elif query:
-                search_result = self.client.search_tracks(query, limit=1)
+                search_result = self.playback_client.search_tracks(query, limit=1)
                 if search_result and 'tracks' in search_result and search_result['tracks']['items']:
                     track = search_result['tracks']['items'][0]
-                    result = self.client.play(uris=[track['uri']])
+                    result = self.playback_client.play(uris=[track['uri']])
                     return handle_play_result(result, f"Playing: {track['name']} - {track['artists'][0]['name']}")
                 return {"success": False, "message": f"Songs not found for '{query}'"}
 
             else:
-                result = self.client.play()
+                result = self.playback_client.play()
                 return handle_play_result(result, "playback resumed")
 
         except Exception as e:
@@ -66,7 +68,7 @@ class SpotifyController:
     def pause_music(self) -> Dict[str, Any]:
         """Pausa la reproducción"""
         try:
-            success = self.client.pause()
+            success = self.playback_client.pause()
             if success:
                 return {"success": True, "message": "Playback paused"}
             return {"success": False, "message": "Could not pause playback"}
@@ -76,7 +78,7 @@ class SpotifyController:
     def skip_next(self) -> Dict[str, Any]:
         """Skip to the next song"""
         try:
-            success = self.client.skip_next()
+            success = self.playback_client.skip_next()
             if success:
                 return {"success": True, "message": "Skipping to the next song"}
             return {"success": False, "message": "Could not skip to the next song"}
@@ -86,7 +88,7 @@ class SpotifyController:
     def skip_previous(self) -> Dict[str, Any]:
         """Skip to the previous song"""
         try:
-            success = self.client.skip_previous()
+            success = self.playback_client.skip_previous()
             if success:
                 return {"success": True, "message": "Skipping to the previous song"}
             return {"success": False, "message": "Could not skip to the previous song"}
@@ -96,7 +98,7 @@ class SpotifyController:
     def set_volume(self, volume_percent: int) -> Dict[str, Any]:
         """Set the volume"""
         try:
-            success = self.client.set_volume(volume_percent)
+            success = self.playback_client.set_volume(volume_percent)
             if success:
                 return {"success": True, "message": f"Volume set to {volume_percent}%"}
             return {"success": False, "message": "Could not change volume"}
@@ -106,7 +108,7 @@ class SpotifyController:
     def get_current_playing(self) -> Dict[str, Any]:
         """Gets the information of the current song"""
         try:
-            current = self.client.get_current_playing()
+            current = self.playback_client.get_current_playing()
             if current and 'item' in current:
                 track = current['item']
                 track_info = TrackInfo(
@@ -130,7 +132,7 @@ class SpotifyController:
     def get_playback_state(self) -> Dict[str, Any]:
         """Gets the full playback status"""
         try:
-            state = self.client.get_playback_state()
+            state = self.playback_client.get_playback_state()
             if state:
                 current_track = None
                 if state.get('item'):
@@ -161,9 +163,9 @@ class SpotifyController:
         """Search for music on Spotify"""
         try:
             if search_type == "track":
-                result = self.client.search_tracks(query, limit)
+                result = self.playback_client.search_tracks(query, limit)
             elif search_type == "artist":
-                result = self.client.search_artists(query, limit)
+                result = self.playback_client.search_artists(query, limit)
             else:
                 return {"success": False, "message": f"Search type '{search_type}' not supported"}
             
@@ -193,7 +195,7 @@ class SpotifyController:
     def get_playlists(self) -> Dict[str, Any]:
         """Gets the user's playlists"""
         try:
-            playlists = self.client.get_user_playlists()
+            playlists = self.playlists_client.get_user_playlists()
             if playlists and 'items' in playlists:
                 playlist_list = []
                 for playlist in playlists['items']:
@@ -226,7 +228,7 @@ class SpotifyController:
             f"DEBUG: spotify_controller : Creating playlist with name {playlist_name}"
         )
         try:
-            result = self.client.create_playlist(playlist_name, description, False)
+            result = self.playlists_client.create_playlist(playlist_name, description, False)
             if result:
                 playlist_info = PlaylistInfo(
                     id=result.get('id', ''),
@@ -245,7 +247,7 @@ class SpotifyController:
         """Checks if the user is authenticated"""
         try:
             # Attempt to get playback status to verify authentication
-            state = self.client.get_playback_state()
+            state = self.playback_client.get_playback_state()
             return state is not None
         except:
             return False
@@ -256,7 +258,7 @@ class SpotifyController:
             if not self._validate_spotify_id(playlist_id):
                 return {'success': False, 'message': 'ID de playlist inválido. Debe ser un ID de Spotify válido.'}
 
-            tracks = self.client.get_playlist_tracks(playlist_id, limit)
+            tracks = self.playlists_client.get_playlist_tracks(playlist_id, limit)
             if tracks and 'items' in tracks:
                 track_list = []
                 for item in tracks['items']:
@@ -286,7 +288,7 @@ class SpotifyController:
         try:
             if not self._validate_spotify_id(playlist_id):
                 return {'success': False, 'message': 'Invalid playlist ID. It must be a valid Spotify ID.'}
-            result = self.client.rename_playlist(playlist_id,playlist_name)
+            result = self.playlists_client.rename_playlist(playlist_id,playlist_name)
             if result:
                 return {"success": True, "message": "Playlist renamed successfully"}
             return {"success": False, "message": "Could not rename the playlist"}
@@ -315,7 +317,7 @@ class SpotifyController:
             if not track_uris or not all(
                     isinstance(uri, str) and uri.startswith('spotify:track:') for uri in track_uris):
                 return {'success': False, 'message': 'Invalid track URIs. Must be valid Spotify track URIs.'}
-            result = self.client.add_tracks_to_playlist(playlist_id, track_uris)
+            result = self.playlists_client.add_tracks_to_playlist(playlist_id, track_uris)
             if result:
                 return {'success': True, 'message': 'Tracks added successfully'}
             return {'success': False, 'message': 'Could not add tracks to playlist'}
