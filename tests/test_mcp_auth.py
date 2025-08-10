@@ -8,7 +8,7 @@ import os
 import json
 
 # Add the current directory to the path to import modules
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.mcp_stdio_server import MCPServer
 

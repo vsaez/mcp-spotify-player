@@ -7,7 +7,7 @@ import sys
 import os
 
 # Add the current directory to the path to import modules
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.spotify_controller import SpotifyController
 
