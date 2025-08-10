@@ -163,31 +163,50 @@ class PlaybackController:
         try:
             if search_type == "track":
                 result = self.playback_client.search_tracks(query, limit)
+                if result:
+                    tracks: List[Dict[str, Any]] = []
+                    if 'tracks' in result and 'items' in result['tracks']:
+                        for track in result['tracks']['items']:
+                            track_info = TrackInfo(
+                                name=track['name'],
+                                artist=track['artists'][0]['name'],
+                                album=track['album']['name'],
+                                uri=track['uri'],
+                                duration_ms=track['duration_ms'],
+                                external_url=track['external_urls']['spotify'],
+                            )
+                            tracks.append(track_info.dict())
+
+                    return {
+                        "success": True,
+                        "tracks": tracks,
+                        "total_results": result.get('tracks', {}).get('total', 0),
+                    }
+                return {"success": False, "message": "No results found"}
+
             elif search_type == "artist":
                 result = self.playback_client.search_artists(query, limit)
+                if result:
+                    artists: List[Dict[str, Any]] = []
+                    if 'artists' in result and 'items' in result['artists']:
+                        for artist in result['artists']['items']:
+                            artists.append(
+                                {
+                                    "name": artist['name'],
+                                    "uri": artist['uri'],
+                                    "external_url": artist['external_urls']['spotify'],
+                                }
+                            )
+
+                    return {
+                        "success": True,
+                        "artists": artists,
+                        "total_results": result.get('artists', {}).get('total', 0),
+                    }
+                return {"success": False, "message": "No results found"}
+
             else:
                 return {"success": False, "message": f"Search type '{search_type}' not supported"}
-
-            if result:
-                tracks = []
-                if 'tracks' in result and 'items' in result['tracks']:
-                    for track in result['tracks']['items']:
-                        track_info = TrackInfo(
-                            name=track['name'],
-                            artist=track['artists'][0]['name'],
-                            album=track['album']['name'],
-                            uri=track['uri'],
-                            duration_ms=track['duration_ms'],
-                            external_url=track['external_urls']['spotify'],
-                        )
-                        tracks.append(track_info.dict())
-
-                return {
-                    "success": True,
-                    "tracks": tracks,
-                    "total_results": result.get('tracks', {}).get('total', 0) if 'tracks' in result else 0,
-                }
-            return {"success": False, "message": "No results found"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
