@@ -175,6 +175,17 @@ class MCPServer:
                     }
                 },
                 {
+                    "name": "clear_playlist",
+                    "description": "Remove all tracks from a Spotify playlist",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "playlist_id": {"type": "string", "description": "Spotify playlist ID"}
+                        },
+                        "required": ["playlist_id"]
+                    }
+                },
+                {
                     "name": "create_playlist",
                     "description": "Create a new Spotify playlist with the given name",
                     "inputSchema": {
@@ -280,7 +291,7 @@ class MCPServer:
                 # Check authentication for commands that require it
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
                                  "set_volume", "get_current_playing", "get_playback_state", "get_playlist_tracks",
-                                 "rename_playlist", "create_playlist", "add_tracks_to_playlist"]:
+                                 "rename_playlist", "clear_playlist", "create_playlist", "add_tracks_to_playlist"]:
 
                     logger.info(f"Checking authentication for {tool_name}")
                     if not self.controller.is_authenticated():
@@ -477,6 +488,20 @@ class MCPServer:
                         return f"{result.get('message', 'Playlist renamed successfully')}"
                     else:
                         return f"Error renaming playlist: {result.get('message', 'Unknown error')}"
+                else:
+                    return result
+
+            elif tool_name == "clear_playlist":
+                playlist_id = arguments.get("playlist_id")
+                if not playlist_id:
+                    raise ValueError("playlist_id is required")
+
+                result = self.controller.clear_playlist(playlist_id)
+                if isinstance(result, dict):
+                    if result.get('success'):
+                        return f"{result.get('message', 'Playlist cleared successfully')}"
+                    else:
+                        return f"Error clearing playlist: {result.get('message', 'Unknown error')}"
                 else:
                     return result
 
