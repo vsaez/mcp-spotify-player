@@ -1,39 +1,36 @@
 #!/usr/bin/env python3
-"""
-Simple script to test Spotify search
-"""
+"""Tests for Spotify search helpers."""
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.spotify_client import SpotifyClient
 
 
-def test_search():
-    print("=== SPOTIFY SEARCH TEST ===\n")
-
+def test_search_methods():
     client = SpotifyClient()
+    calls = []
 
-    # Test search
-    query = "jazz"
-    print(f"Searching: '{query}'")
+    def fake_make_request(method, endpoint, params=None, json=None):
+        calls.append({'method': method, 'endpoint': endpoint, 'params': params})
+        return {'ok': True}
 
-    result = client.search_tracks(query, limit=5)
+    client._make_request = fake_make_request
 
-    if result:
-        print("✓ Search successful")
-        if 'tracks' in result and 'items' in result['tracks']:
-            tracks = result['tracks']['items']
-            print(f"✓ Found {len(tracks)} songs")
-            for i, track in enumerate(tracks[:3]):
-                print(f"  {i + 1}. {track['name']} - {track['artists'][0]['name']}")
-        else:
-            print(f"✗ Unexpected result: {result}")
-    else:
-        print("✗ Search failed")
+    # search_tracks wrapper
+    result = client.search_tracks('jazz', limit=5)
+    assert result == {'ok': True}
+    assert calls[-1]['params'] == {'q': 'jazz', 'type': 'track', 'limit': 5}
 
+    # search_artists wrapper
+    result = client.search_artists('miles', limit=3)
+    assert result == {'ok': True}
+    assert calls[-1]['params'] == {'q': 'miles', 'type': 'artist', 'limit': 3}
 
-if __name__ == "__main__":
-    test_search()
+    # generic search for albums
+    result = client.search('blue', type_='album', limit=2)
+    assert result == {'ok': True}
+    assert calls[-1]['params'] == {'q': 'blue', 'type': 'album', 'limit': 2}
+

@@ -52,20 +52,23 @@ class SpotifyPlaybackClient:
         """Gets the current playback status"""
         return self.requester._make_request('GET', '/me/player')
 
-    def search_tracks(self, query: str, limit: int = 10) -> Optional[Dict[str, Any]]:
-        """Search for songs on Spotify"""
+    def _search(self, query: str, type_: str, limit: int = 10) -> Optional[Dict[str, Any]]:
+        """Internal helper to perform a search request against Spotify."""
         params = {
             'q': query,
-            'type': 'track',
+            'type': type_,
             'limit': limit
         }
         return self.requester._make_request('GET', '/search', params=params)
 
+    def search(self, query: str, type_: str, limit: int = 10) -> Optional[Dict[str, Any]]:
+        """Search for any supported type on Spotify (track, artist, album, etc.)."""
+        return self._search(query, type_, limit)
+
+    def search_tracks(self, query: str, limit: int = 10) -> Optional[Dict[str, Any]]:
+        """Search for songs on Spotify."""
+        return self._search(query, 'track', limit)
+
     def search_artists(self, query: str, limit: int = 10) -> Optional[Dict[str, Any]]:
-        """Search for artists on Spotify"""
-        params = {
-            'q': query,
-            'type': 'artist',
-            'limit': limit
-        }
-        return self.requester._make_request('GET', '/search', params=params)
+        """Search for artists on Spotify."""
+        return self._search(query, 'artist', limit)
