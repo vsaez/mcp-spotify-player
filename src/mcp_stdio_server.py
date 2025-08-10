@@ -25,6 +25,43 @@ class MCPServer:
         # MCP Manifest
         self.manifest = MANIFEST
 
+        # Tool dispatch configuration
+        self.TOOL_HANDLERS = {
+            "play_music": self.controller.play_music,
+            "pause_music": self.controller.pause_music,
+            "skip_next": self.controller.skip_next,
+            "skip_previous": self.controller.skip_previous,
+            "set_volume": self.controller.set_volume,
+            "get_current_playing": self.controller.get_current_playing,
+            "get_playback_state": self.controller.get_playback_state,
+            "search_music": self.controller.search_music,
+            "get_playlists": self.controller.get_playlists,
+            "get_playlist_tracks": self.controller.get_playlist_tracks,
+            "rename_playlist": self.controller.rename_playlist,
+            "clear_playlist": self.controller.clear_playlist,
+            "create_playlist": self.controller.create_playlist,
+            "add_tracks_to_playlist": self.controller.add_tracks_to_playlist,
+        }
+
+        # Optional validators and result formatters
+        self.TOOL_VALIDATORS = {
+            "set_volume": self._validate_set_volume,
+            "search_music": self._validate_search_music,
+            "get_playlist_tracks": self._validate_get_playlist_tracks,
+            "rename_playlist": self._validate_rename_playlist,
+            "clear_playlist": self._validate_clear_playlist,
+            "create_playlist": self._validate_create_playlist,
+            "add_tracks_to_playlist": self._validate_add_tracks_to_playlist,
+        }
+
+        self.RESULT_FORMATTERS = {
+            "get_current_playing": self._format_get_current_playing,
+            "get_playback_state": self._format_get_playback_state,
+            "search_music": self._format_json_result,
+            "get_playlists": self._format_json_result,
+            "get_playlist_tracks": self._format_json_result,
+        }
+
 
     def send_response(self, response: Dict[str, Any]):
         """Send a JSON-RPC response over stdout"""
@@ -155,199 +192,104 @@ class MCPServer:
             self.send_error(request_id, -32603, f"Internal error: {str(e)}")
 
     def execute_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:
-        """Execute a specific tool"""
+        """Execute a specific tool using dynamic dispatch"""
         try:
-            if tool_name == "play_music":
-                result = self.controller.play_music(
-                    query=arguments.get("query"),
-                    playlist_name=arguments.get("playlist_name"),
-                    track_uri=arguments.get("track_uri"),
-                    artist_uri=arguments.get("artist_uri")
-                )
-                if result.get('success'):
-                    return f"{result.get('message', 'Playback started')}"
-                else:
-                    return f"{result.get('message', 'Could not play music')}"
-
-            elif tool_name == "pause_music":
-                result = self.controller.pause_music()
-                if result.get('success'):
-                    return f"{result.get('message', 'Playback paused')}"
-                else:
-                    return f"{result.get('message', 'Could not pause')}"
-
-            elif tool_name == "skip_next":
-                result = self.controller.skip_next()
-                if result.get('success'):
-                    return f"{result.get('message', 'Skipping to the next song')}"
-                else:
-                    return f"{result.get('message', 'Could not skip')}"
-
-            elif tool_name == "skip_previous":
-                result = self.controller.skip_previous()
-                if result.get('success'):
-                    return f"{result.get('message', 'Skipping to the previous song')}"
-                else:
-                    return f"{result.get('message', 'Could not skip')}"
-
-            elif tool_name == "set_volume":
-                volume = arguments.get("volume_percent")
-                if volume is None:
-                    raise ValueError("volume_percent is required")
-                result = self.controller.set_volume(volume)
-                if result.get('success'):
-                    return f"{result.get('message', f'Volume set to {volume}%')}"
-                else:
-                    return f"{result.get('message', 'Could not change volume')}"
-
-            elif tool_name == "get_current_playing":
-                result = self.controller.get_current_playing()
-                if result.get('success'):
-                    track = result.get('track', {})
-                    is_playing = result.get('is_playing', False)
-                    progress_ms = result.get('progress_ms', 0)
-
-                    if track:
-                        status = "Playing" if is_playing else "Paused"
-                        logger.info("Debug: running get_current_playing")
-                        return f"{status}: {track.get('name', 'Unknown')} by {track.get('artist', 'Unknown')}"
-                    else:
-                        return "No music is currently playing"
-                else:
-                    return f"Could not retrieve information: {result.get('message', 'Unknown error')}"
-
-            elif tool_name == "get_playback_state":
-                result = self.controller.get_playback_state()
-                if result.get('success'):
-                    state = result.get('state', {})
-                    current_track = state.get('current_track', {})
-                    is_playing = state.get('is_playing', False)
-                    volume = state.get('volume_percent', 0)
-                    device = state.get('device_name', 'Unknown')
-
-                    if current_track:
-                        status = "Playing" if is_playing else "Paused"
-                        track_info = f"{current_track.get('name', 'Unknown')} - {current_track.get('artist', 'Unknown')}"
-                        return f"{status}: {track_info} | Volume: {volume}% | Device: {device}"
-                    else:
-                        return f"No music playing | Volume: {volume}% | Device: {device}"
-                else:
-                    return f"Could not retrieve state: {result.get('message', 'Unknown error')}"
-
-            elif tool_name == "search_music":
-                query = arguments.get("query")
-                if not query:
-                    raise ValueError("query is required")
-                result = self.controller.search_music(
-                    query=query,
-                    search_type=arguments.get("search_type", "track"),
-                    limit=arguments.get("limit", 10)
-                )
-                if result.get('success'):
-                    # Return full track information so clients can access URIs
-                    return json.dumps(result)
-                else:
-                    return json.dumps({
-                        "success": False,
-                        "message": result.get('message', 'Unknown error')
-                    })
-
-            elif tool_name == "get_playlists":
-                result = self.controller.get_playlists()
-                if result.get('success'):
-                    return json.dumps(result)
-                else:
-                    return json.dumps({
-                        "success": False,
-                        "message": result.get('message', 'Unknown error')
-                    })
-
-            elif tool_name == "get_playlist_tracks":
-                playlist_id = arguments.get("playlist_id")
-                if not playlist_id:
-                    raise ValueError("playlist_id is required")
-
-                # Validate if playlist_id is a valid Spotify ID
-                if playlist_id.isdigit() and len(playlist_id) < 10:  # Most likely is an index not a real ID
-                    return (
-                        "Error: The provided identifier appears to be a position number, not a valid Spotify ID. "
-                        "Spotify IDs are long alphanumeric codes."
-                    )
-
-                limit = arguments.get("limit", 20)
-                result = self.controller.get_playlist_tracks(playlist_id, limit)
-                if result.get('success'):
-                    return json.dumps(result)
-                else:
-                    return json.dumps({
-                        "success": False,
-                        "message": result.get('message', 'Unknown error')
-                    })
-
-            elif tool_name == "rename_playlist":
-                logger.info(f"DEBUG: mcp_stdio_server : Renaming playlist with id {arguments.get('playlist_id')}")
-                playlist_id = arguments.get("playlist_id")
-                new_name = arguments.get("new_name")
-                if not playlist_id:
-                    raise ValueError("playlist_id is required")
-
-                # Validate if playlist_id is a valid Spotify ID
-                result = self.controller.rename_playlist(playlist_id, new_name)
-                if isinstance(result, dict):
-                    if result.get('success'):
-                        return f"{result.get('message', 'Playlist renamed successfully')}"
-                    else:
-                        return f"Error renaming playlist: {result.get('message', 'Unknown error')}"
-                else:
-                    return result
-
-            elif tool_name == "clear_playlist":
-                playlist_id = arguments.get("playlist_id")
-                if not playlist_id:
-                    raise ValueError("playlist_id is required")
-
-                result = self.controller.clear_playlist(playlist_id)
-                if isinstance(result, dict):
-                    if result.get('success'):
-                        return f"{result.get('message', 'Playlist cleared successfully')}"
-                    else:
-                        return f"Error clearing playlist: {result.get('message', 'Unknown error')}"
-                else:
-                    return result
-
-            elif tool_name == "create_playlist":
-                playlist_name = arguments.get("playlist_name")
-                if not playlist_name:
-                    raise ValueError("playlist_name is required")
-                description = arguments.get("description", "")
-                result = self.controller.create_playlist(playlist_name, description)
-                if result.get('success'):
-                    playlist = result.get('playlist', {})
-                    return f"Playlist '{playlist.get('name', playlist_name)}' created successfully"
-                else:
-                    return f"Error creating playlist: {result.get('message', 'Unknown error')}"
-
-            elif tool_name == "add_tracks_to_playlist":
-                playlist_id = arguments.get("playlist_id")
-                track_uris = arguments.get("track_uris")
-                if not playlist_id or not track_uris:
-                    raise ValueError("playlist_id and track_uris are required")
-
-                result = self.controller.add_tracks_to_playlist(playlist_id, track_uris)
-                if isinstance(result, dict):
-                    if result.get('success'):
-                        return f"{result.get('message', 'Tracks added successfully')}"
-                    else:
-                        return f"Error adding tracks: {result.get('message', 'Unknown error')}"
-                else:
-                    return result
-
-            else:
+            handler = self.TOOL_HANDLERS.get(tool_name)
+            if not handler:
                 raise ValueError(f"Tool '{tool_name}' not supported")
+
+            validator = self.TOOL_VALIDATORS.get(tool_name)
+            if validator:
+                validator(arguments)
+
+            result = handler(**arguments)
+            formatter = self.RESULT_FORMATTERS.get(tool_name, self._default_formatter)
+            return formatter(result, arguments)
 
         except Exception as e:
             logger.error(f"Error executing {tool_name}: {str(e)}")
             return f"Error: {str(e)}"
+
+    # -----------------------
+    # Validators
+    # -----------------------
+    def _validate_set_volume(self, arguments: Dict[str, Any]):
+        if arguments.get("volume_percent") is None:
+            raise ValueError("volume_percent is required")
+
+    def _validate_search_music(self, arguments: Dict[str, Any]):
+        if not arguments.get("query"):
+            raise ValueError("query is required")
+
+    def _validate_get_playlist_tracks(self, arguments: Dict[str, Any]):
+        playlist_id = arguments.get("playlist_id")
+        if not playlist_id:
+            raise ValueError("playlist_id is required")
+        if playlist_id.isdigit() and len(playlist_id) < 10:
+            raise ValueError(
+                "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
+            )
+
+        # set default limit if not provided
+        arguments.setdefault("limit", 20)
+
+    def _validate_rename_playlist(self, arguments: Dict[str, Any]):
+        if not arguments.get("playlist_id"):
+            raise ValueError("playlist_id is required")
+
+    def _validate_clear_playlist(self, arguments: Dict[str, Any]):
+        if not arguments.get("playlist_id"):
+            raise ValueError("playlist_id is required")
+
+    def _validate_create_playlist(self, arguments: Dict[str, Any]):
+        if not arguments.get("playlist_name"):
+            raise ValueError("playlist_name is required")
+
+    def _validate_add_tracks_to_playlist(self, arguments: Dict[str, Any]):
+        if not arguments.get("playlist_id") or not arguments.get("track_uris"):
+            raise ValueError("playlist_id and track_uris are required")
+
+    # -----------------------
+    # Result formatters
+    # -----------------------
+    def _default_formatter(self, result: Any, _arguments: Dict[str, Any]) -> str:
+        if isinstance(result, dict):
+            if result.get('success'):
+                return result.get('message', 'Success')
+            return result.get('message', 'Error')
+        return str(result)
+
+    def _format_get_current_playing(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
+        if result.get('success'):
+            track = result.get('track', {})
+            is_playing = result.get('is_playing', False)
+            if track:
+                status = "Playing" if is_playing else "Paused"
+                return f"{status}: {track.get('name', 'Unknown')} by {track.get('artist', 'Unknown')}"
+            return "No music is currently playing"
+        return f"Could not retrieve information: {result.get('message', 'Unknown error')}"
+
+    def _format_get_playback_state(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
+        if result.get('success'):
+            state = result.get('state', {})
+            current_track = state.get('current_track', {})
+            is_playing = state.get('is_playing', False)
+            volume = state.get('volume_percent', 0)
+            device = state.get('device_name', 'Unknown')
+            if current_track:
+                status = "Playing" if is_playing else "Paused"
+                track_info = f"{current_track.get('name', 'Unknown')} - {current_track.get('artist', 'Unknown')}"
+                return f"{status}: {track_info} | Volume: {volume}% | Device: {device}"
+            return f"No music playing | Volume: {volume}% | Device: {device}"
+        return f"Could not retrieve state: {result.get('message', 'Unknown error')}"
+
+    def _format_json_result(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
+        if result.get('success'):
+            return json.dumps(result)
+        return json.dumps({
+            "success": False,
+            "message": result.get('message', 'Unknown error')
+        })
 
     def run(self):
         """Run the MCP server"""

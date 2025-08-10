@@ -36,6 +36,7 @@ def test_mcp_server_clear_playlist():
         "clear_playlist",
         return_value={"success": True, "message": "Playlist cleared successfully"},
     ) as mock_clear:
+        server.TOOL_HANDLERS["clear_playlist"] = server.controller.clear_playlist
         result = server.execute_tool("clear_playlist", {"playlist_id": "playlist123"})
         assert "cleared" in result.lower()
-        mock_clear.assert_called_once_with("playlist123")
+        mock_clear.assert_called_once_with(playlist_id="playlist123")
