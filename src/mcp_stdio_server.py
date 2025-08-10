@@ -423,35 +423,24 @@ class MCPServer:
                     limit=arguments.get("limit", 10)
                 )
                 if result.get('success'):
-                    tracks = result.get('tracks', [])
-                    total = result.get('total_results', 0)
-                    if tracks:
-                        track_list = []
-                        for i, track in enumerate(tracks[:5], 1):
-                            track_list.append(f"{i}. {track.get('name', 'Unknown')} - {track.get('artist', 'Unknown')}")
-                        return f"Found {len(tracks)} songs for '{query}' (of {total} total):\n" + "\n".join(track_list)
-                    else:
-                        return f"No songs found for '{query}'"
+                    # Return full track information so clients can access URIs
+                    return json.dumps(result)
                 else:
-                    return f"Search error: {result.get('message', 'Unknown error')}"
+                    return json.dumps({
+                        "success": False,
+                        "message": result.get('message', 'Unknown error')
+                    })
 
             elif tool_name == "get_playlists":
                 result = self.controller.get_playlists()
                 if result.get('success'):
-                    playlists = result.get('playlists', [])
-                    total = result.get('total_playlists', 0)
-                    if playlists:
-                        playlist_list = []
-                        for i, playlist in enumerate(playlists, 1):
-                            playlist_list.append(
-                                f"{i}. {playlist.get('name', 'Unknown')} ({playlist.get('track_count', 0)} songs)")
-                            playlist_list.append(
-                                f"{i}. {playlist.get('name', 'Unknown')} ({playlist.get('track_count', 0)} songs) - ID: {playlist.get('id')}")
-                        return f"Found {len(playlists)} playlists (of {total} total):\n" + "\n".join(playlist_list)
-                    else:
-                        return "No playlists found"
+                    return json.dumps(result)
                 else:
-                    return f"Error fetching playlists: {result.get('message', 'Unknown error')}"
+                    return json.dumps({
+                        "success": False,
+                        "message": result.get('message', 'Unknown error')
+                    })
+
             elif tool_name == "get_playlist_tracks":
                 playlist_id = arguments.get("playlist_id")
                 if not playlist_id:
@@ -459,23 +448,20 @@ class MCPServer:
 
                 # Validate if playlist_id is a valid Spotify ID
                 if playlist_id.isdigit() and len(playlist_id) < 10:  # Most likely is an index not a real ID
-                    return "Error: The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
+                    return (
+                        "Error: The provided identifier appears to be a position number, not a valid Spotify ID. "
+                        "Spotify IDs are long alphanumeric codes."
+                    )
 
                 limit = arguments.get("limit", 20)
                 result = self.controller.get_playlist_tracks(playlist_id, limit)
                 if result.get('success'):
-                    tracks = result.get('tracks', [])
-                    total = result.get('total_tracks', 0)
-                    if tracks:
-                        track_list = []
-                        for i, track in enumerate(tracks[:5], 1):
-                            track_list.append(f"{i}. {track.get('name', 'Unknown')} - {track.get('artist', 'Unknown')}")
-                        return f"Found {len(tracks)} tracks in the playlist (of {total} total):\n" + "\n".join(
-                            track_list)
-                    else:
-                        return "No tracks found in the playlist"
+                    return json.dumps(result)
                 else:
-                    return f"Error fetching playlist tracks: {result.get('message', 'Unknown error')}"
+                    return json.dumps({
+                        "success": False,
+                        "message": result.get('message', 'Unknown error')
+                    })
 
             elif tool_name == "rename_playlist":
                 logger.info(f"DEBUG: mcp_stdio_server : Renaming playlist with id {arguments.get('playlist_id')}")
