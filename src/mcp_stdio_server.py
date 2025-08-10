@@ -27,20 +27,20 @@ class MCPServer:
 
         # Tool dispatch configuration
         self.TOOL_HANDLERS = {
-            "play_music": self.controller.play_music,
-            "pause_music": self.controller.pause_music,
-            "skip_next": self.controller.skip_next,
-            "skip_previous": self.controller.skip_previous,
-            "set_volume": self.controller.set_volume,
-            "get_current_playing": self.controller.get_current_playing,
-            "get_playback_state": self.controller.get_playback_state,
-            "search_music": self.controller.search_music,
-            "get_playlists": self.controller.get_playlists,
-            "get_playlist_tracks": self.controller.get_playlist_tracks,
-            "rename_playlist": self.controller.rename_playlist,
-            "clear_playlist": self.controller.clear_playlist,
-            "create_playlist": self.controller.create_playlist,
-            "add_tracks_to_playlist": self.controller.add_tracks_to_playlist,
+            "play_music": self.controller.playback.play_music,
+            "pause_music": self.controller.playback.pause_music,
+            "skip_next": self.controller.playback.skip_next,
+            "skip_previous": self.controller.playback.skip_previous,
+            "set_volume": self.controller.playback.set_volume,
+            "get_current_playing": self.controller.playback.get_current_playing,
+            "get_playback_state": self.controller.playback.get_playback_state,
+            "search_music": self.controller.playback.search_music,
+            "get_playlists": self.controller.playlists.get_playlists,
+            "get_playlist_tracks": self.controller.playlists.get_playlist_tracks,
+            "rename_playlist": self.controller.playlists.rename_playlist,
+            "clear_playlist": self.controller.playlists.clear_playlist,
+            "create_playlist": self.controller.playlists.create_playlist,
+            "add_tracks_to_playlist": self.controller.playlists.add_tracks_to_playlist,
         }
 
         # Optional validators and result formatters
