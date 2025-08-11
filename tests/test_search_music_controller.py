@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.playback_controller import PlaybackController
+from mcp_spotify_player.playback_controller import PlaybackController
 
 
 def test_search_music_tracks():

@@ -1,8 +1,8 @@
-from typing import Dict, Any, List
 import logging
+from typing import Any, Dict, List
 
-from src.spotify_client import SpotifyClient
-from src.mcp_models import TrackInfo, PlaylistInfo
+from mcp_spotify_player.mcp_models import PlaylistInfo, TrackInfo
+from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = logging.getLogger(__name__)
 

@@ -4,9 +4,8 @@
 
 mcpServers:
   spotify-player:
-    command: python
-    args:
-      - start_mcp_server.py
+    command: mcp-spotify-player
+    args: []
     env:
       # Asegúrate de que estas variables estén configuradas
       SPOTIFY_CLIENT_ID: "tu_client_id_aqui"
@@ -15,4 +14,4 @@ mcpServers:
     cwd: "Z:/projects/mcp/mcp-spotify-player"  # Cambia esto por tu ruta real
     description: "Servidor MCP para controlar Spotify desde Claude"
     capabilities:
-      tools: {} 
+      tools: {}

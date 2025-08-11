@@ -1,11 +1,13 @@
-import logging
-import requests
 import json
-import time
+import logging
 import os
 import sys
-from typing import Optional, Dict, Any
-from src.config import Config
+import time
+from typing import Any, Dict, Optional
+
+import requests
+
+from mcp_spotify_player.config import Config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -89,7 +91,7 @@ class SpotifyAuthClient:
     def _load_tokens(self) -> bool:
         """Load tokens from local file"""
         try:
-            with open(self.tokens_file, 'r') as f:
+            with open(self.tokens_file) as f:
                 token_data = json.load(f)
             self.access_token = token_data['access_token']
             self.refresh_token = token_data['refresh_token']

@@ -1,4 +1,4 @@
-from src.spotify_client import SpotifyClient
+from mcp_spotify_player.spotify_client import SpotifyClient
 
 
 def test_set_repeat_client():

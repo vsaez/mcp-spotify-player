@@ -1,5 +1,5 @@
-from src.mcp_stdio_server import MCPServer
-from src.mcp_manifest import MANIFEST
+from mcp_spotify_player.mcp_stdio_server import MCPServer
+from mcp_spotify_player.mcp_manifest import MANIFEST
 
 
 def test_manifest_loaded():

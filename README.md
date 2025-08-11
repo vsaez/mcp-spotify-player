@@ -22,27 +22,34 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 ## 🔧 Installation
 
 1. **Clone the repository**:
-   ```bash
-   git clone <your-repository>
-   cd mcp-spotify-player
-   ```
+```bash
+git clone <your-repository>
+cd mcp-spotify-player
+```
 
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+2. **Install**:
+```bash
+pip install .
+```
+
+For development:
+```bash
+pip install -e .
+```
 
 3. **Set up environment variables**:
-   ```bash
-   cp env.example env
-   ```
-   
-   Edit the `env` file with your Spotify credentials:
-   ```env
-   SPOTIFY_CLIENT_ID=your_client_id_here
-   SPOTIFY_CLIENT_SECRET=your_client_secret_here
-   SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/auth/callback
-   ```
+```bash
+cp env.example env
+```
+
+Edit the `env` file with your Spotify credentials:
+```env
+SPOTIFY_CLIENT_ID=your_client_id_here
+SPOTIFY_CLIENT_SECRET=your_client_secret_here
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/auth/callback
+```
+
+Note: dependencies are now managed with `pyproject.toml`.
 
 ## 🔐 Spotify Configuration
 
@@ -103,21 +110,23 @@ Once authenticated, you can use these commands:
 ```
 mcp-spotify-player/
 ├── src/
-│   ├── __init__.py             # Package marker
-│   ├── client_auth.py          # Handles OAuth tokens
-│   ├── client_playback.py      # Playback client
-│   ├── client_playlists.py     # Playlists client
-│   ├── config.py               # Configuration
-│   ├── mcp_manifest.py         # MCP manifest
-│   ├── mcp_models.py           # MCP models
-│   ├── mcp_stdio_server.py     # MCP stdio server
-│   ├── playback_controller.py  # Playback controller
-│   ├── playlist_controller.py  # Playlist controller
-│   ├── spotify_client.py       # Spotify API wrapper
-│   └── spotify_controller.py   # High-level commands
-├── start_mcp_server.py         # MCP startup script
-├── mcp-spotify-player.yaml     # MCP configuration
-└── requirements.txt            # Dependencies
+│   └── mcp_spotify_player/
+│       ├── __init__.py
+│       ├── cli.py
+│       ├── __main__.py
+│       ├── client_auth.py
+│       ├── client_playback.py
+│       ├── client_playlists.py
+│       ├── config.py
+│       ├── mcp_manifest.py
+│       ├── mcp_models.py
+│       ├── mcp_stdio_server.py
+│       ├── playback_controller.py
+│       ├── playlist_controller.py
+│       ├── spotify_client.py
+│       └── spotify_controller.py
+├── pyproject.toml
+└── requirements.txt
 ```
 
 ### MCP stdio server
@@ -129,7 +138,9 @@ mcp-spotify-player/
 ### Run in development mode
 
 ```bash
-python start_mcp_server.py
+mcp-spotify-player
+# or
+python -m mcp_spotify_player
 ```
 
 ## 🐛 Troubleshooting
@@ -142,7 +153,7 @@ McpError: MCP error -32001: Request timed out
 ```
 
 **Solution**:
-1. Make sure you are using `start_mcp_server.py` in the MCP configuration
+1. Make sure you are using `mcp-spotify-player` in the MCP configuration
 2. Ensure environment variables are set
 3. Check that `cwd` in the configuration is correct
 

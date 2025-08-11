@@ -1,4 +1,4 @@
-from src.playback_controller import PlaybackController
+from mcp_spotify_player.playback_controller import PlaybackController
 
 
 def test_set_repeat_controller():

@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any, Union
-from pydantic import field_validator
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel, Field, field_validator
+
 
 class MCPRequest(BaseModel):
     """Modelo base para las peticiones MCP"""

@@ -1,5 +1,5 @@
 import pytest
-from src.mcp_stdio_server import MCPServer
+from mcp_spotify_player.mcp_stdio_server import MCPServer
 
 class DummyController:
     def pause_music(self):

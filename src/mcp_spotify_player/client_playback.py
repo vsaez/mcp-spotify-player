@@ -1,6 +1,8 @@
 import logging
 import sys
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
+
+
 class SpotifyPlaybackClient:
     """Client specialized in playback-related operations."""
 
