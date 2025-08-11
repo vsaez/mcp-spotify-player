@@ -1,3 +1,4 @@
+import logging
 import sys
 from typing import Optional, Dict, Any, List
 class SpotifyPlaybackClient:
@@ -52,6 +53,7 @@ class SpotifyPlaybackClient:
         if device_id:
             params['device_id'] = device_id
         result = self.requester._make_request('PUT', '/me/player/repeat', params=params)
+        logging.info(f"DEBUG: Setting repeat state to {state} with params {params} result: {result}")
         return result is not None
 
     def get_current_playing(self) -> Optional[Dict[str, Any]]:
