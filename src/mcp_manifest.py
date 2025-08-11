@@ -94,6 +94,14 @@ MANIFEST = {
             }
         },
         {
+            "name": "get_devices",
+            "description": "Retrieve available Spotify devices",
+            "inputSchema": {
+                "type": "object",
+                "properties": {}
+            }
+        },
+        {
             "name": "search_music",
             "description": "Search for music on Spotify by track, artist, or album",
             "inputSchema": {

@@ -95,6 +95,7 @@ Once integrated, Claude can use these commands:
 - `set_volume` - Change volume
 - `get_current_playing` - Current track
 - `get_playback_state` - Full playback state
+- `get_devices` - List available devices
 - `search_music` - Search music
 - `get_playlists` - List playlists
 

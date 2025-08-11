@@ -6,6 +6,7 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 
 - **Playback control**: Play, pause, skip songs
 - **Playback status**: Check current song and device status
+- **Device information**: List available playback devices
 - **Volume control**: Adjust volume from 0 to 100%
 - **Music search**: Search for songs, artists, and albums
 - **Playlist management**: List, create, rename, clear, and add tracks to your playlists
@@ -84,6 +85,7 @@ Once authenticated, you can use these commands:
 - `set_volume` — "Set volume to 50%"
 - `get_current_playing` — "What's playing?"
 - `get_playback_state` — "What's the playback state?"
+- `get_devices` — "List my available devices"
 - `search_music` — "Search for songs by Queen"
 - `get_playlists` — "List my playlists"
 - `get_playlist_tracks` — "Show tracks in playlist 'Road Trip'"

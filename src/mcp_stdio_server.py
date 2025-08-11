@@ -34,6 +34,7 @@ class MCPServer:
             "set_volume": self.controller.playback.set_volume,
             "get_current_playing": self.controller.playback.get_current_playing,
             "get_playback_state": self.controller.playback.get_playback_state,
+            "get_devices": self.controller.playback.get_devices,
             "search_music": self.controller.playback.search_music,
             "get_playlists": self.controller.playlists.get_playlists,
             "get_playlist_tracks": self.controller.playlists.get_playlist_tracks,
@@ -57,6 +58,7 @@ class MCPServer:
         self.RESULT_FORMATTERS = {
             "get_current_playing": self._format_get_current_playing,
             "get_playback_state": self._format_get_playback_state,
+            "get_devices": self._format_json_result,
             "search_music": self._format_json_result,
             "get_playlists": self._format_json_result,
             "get_playlist_tracks": self._format_json_result,
@@ -137,7 +139,7 @@ class MCPServer:
 
                 # Check authentication for commands that require it
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
-                                 "set_volume", "get_current_playing", "get_playback_state", "get_playlist_tracks",
+                                 "set_volume", "get_current_playing", "get_playback_state", "get_devices", "get_playlist_tracks",
                                  "rename_playlist", "clear_playlist", "create_playlist", "add_tracks_to_playlist"]:
 
                     logger.info(f"Checking authentication for {tool_name}")

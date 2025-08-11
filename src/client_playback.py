@@ -52,6 +52,10 @@ class SpotifyPlaybackClient:
         """Gets the current playback status"""
         return self.requester._make_request('GET', '/me/player')
 
+    def get_devices(self) -> Optional[Dict[str, Any]]:
+        """Get available playback devices"""
+        return self.requester._make_request('GET', '/me/player/devices')
+
     def _search(self, query: str, type_: str, limit: int = 10) -> Optional[Dict[str, Any]]:
         """Internal helper to perform a search request against Spotify."""
         params = {

@@ -38,6 +38,7 @@ Create an MCP server that allows Claude to control Spotify using natural command
 - `set_volume` - Change volume
 - `get_current_playing` - Current track
 - `get_playback_state` - Full playback state
+- `get_devices` - List available devices
 - `search_music` - Search music
 - `get_playlists` - List playlists
 
