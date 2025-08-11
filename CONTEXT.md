@@ -28,14 +28,7 @@ Create an MCP server that allows Claude to control Spotify using natural command
 2. **`src/spotify_client.py`** - Spotify API client with token management
 3. **`src/spotify_controller.py`** - Business logic and command control
 4. **`src/mcp_models.py`** - Pydantic models for MCP structures
-5. **`src/mcp_server.py`** - FastAPI server with MCP endpoints
-
-### Authentication Flow
-1. User visits `/auth`
-2. Redirect to Spotify OAuth
-3. Callback with authorization code
-4. Exchange for access_token and refresh_token
-5. Local storage in `tokens.json`
+5. **`src/mcp_stdio_server.py`** - MCP server over stdio
 
 ### Available MCP Commands
 - `play_music` - Play music
@@ -55,9 +48,6 @@ Create an MCP server that allows Claude to control Spotify using natural command
 SPOTIFY_CLIENT_ID=your_client_id_here
 SPOTIFY_CLIENT_SECRET=your_client_secret_here
 SPOTIFY_REDIRECT_URI=http://localhost:8000/auth/callback
-PORT=8000
-HOST=0.0.0.0
-DEBUG=True
 ```
 
 ### Required Spotify Scopes
@@ -76,19 +66,7 @@ DEBUG=True
 
 1. **Install dependencies**: `pip install -r requirements.txt`
 2. **Configure credentials**: Edit `.env` with your Spotify details
-3. **Start server**: `python main.py`
-4. **Authenticate**: Visit `http://localhost:8000/auth`
-5. **Test**: Run `python test_server.py`
-
-## 📋 Server Endpoints
-
-- `GET /` - Server information
-- `GET /.well-known/mcp` - MCP manifest
-- `POST /mcp` - MCP commands
-- `GET /auth` - Start authentication
-- `GET /auth/callback` - Authentication callback
-- `GET /status` - Server status
-- `GET /docs` - Swagger documentation
+3. **Start server**: `python start_mcp_server.py`
 
 ## 🎵 Example Usage with Claude
 

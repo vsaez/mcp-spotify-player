@@ -72,7 +72,6 @@ When you open a conversation in Cursor, you should see in the logs:
    ```
    /auth
    ```
-   Or visit: `http://127.0.0.1:8000/auth`
 
 ### Available commands
 
@@ -111,9 +110,8 @@ McpError: MCP error -32001: Request timed out
 ### Authentication error
 
 If you see "Not authenticated with Spotify":
-1. Visit `http://127.0.0.1:8000/auth`
-2. Complete the Spotify authentication flow
-3. Check that the credentials in `env` are correct
+1. Run the `/auth` command again
+2. Check that the credentials in `env` are correct
 
 ### Verify the server works
 

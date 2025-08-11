@@ -31,17 +31,9 @@ Before integrating with Claude, make sure the server is running:
 python start_mcp_server.py
 ```
 
-**For HTTP testing (optional):**
-```bash
-python main.py
-```
-
 ### 3. **Authenticate with Spotify**
 
-1. Open your browser
-2. Go to: `http://127.0.0.1:8000/auth`
-3. Follow the Spotify authentication process
-4. Verify it works by visiting: `http://127.0.0.1:8000/status`
+Run the `/auth` command in your MCP client to start the authentication process.
 
 ### 4. **Use with Claude**
 
@@ -114,12 +106,6 @@ Once integrated, Claude can use these commands:
 - **Usage**: Direct integration with Claude Desktop, Cursor, etc.
 - **Communication**: Direct, no HTTP
 
-### HTTP server (For testing and authentication)
-- **File**: `main.py`
-- **Protocol**: HTTP REST
-- **Usage**: Web testing, authentication, documentation
-- **Communication**: HTTP on port 8000
-
 **Note**: For integration with Claude, always use the MCP stdio server (`start_mcp_server.py`).
 
 ## 🐛 Troubleshooting
@@ -130,8 +116,7 @@ Once integrated, Claude can use these commands:
 - Ensure environment variables are set in the `env` file
 
 ### Error: "Authentication required"
-- Visit `http://127.0.0.1:8000/auth` to authenticate
-- Or run the HTTP server with `python main.py` for authentication
+- Run the `/auth` command to authenticate
 
 ### Error: "Invalid credentials"
 - Check that the credentials in the config file are correct

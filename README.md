@@ -72,7 +72,6 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
    ```
    /auth
    ```
-   Or visit: `http://127.0.0.1:8000/auth`
 
 ### Available commands
 
@@ -107,46 +106,25 @@ mcp-spotify-player/
 │   ├── config.py               # Configuration
 │   ├── mcp_manifest.py         # MCP manifest
 │   ├── mcp_models.py           # MCP models
-│   ├── mcp_server.py           # HTTP server (legacy)
 │   ├── mcp_stdio_server.py     # MCP stdio server
 │   ├── playback_controller.py  # Playback controller
 │   ├── playlist_controller.py  # Playlist controller
 │   ├── spotify_client.py       # Spotify API wrapper
 │   └── spotify_controller.py   # High-level commands
 ├── start_mcp_server.py         # MCP startup script
-├── main.py                     # Main HTTP server
 ├── mcp-spotify-player.yaml     # MCP configuration
 └── requirements.txt            # Dependencies
 ```
 
-### Available servers
+### MCP stdio server
 
-1. **HTTP server** (`main.py`):
-   - For web use and testing
-   - REST endpoints
-   - Documentation at `/docs`
-
-2. **MCP stdio server** (`start_mcp_server.py`):
-   - For integration with Cursor
-   - JSON-RPC protocol over stdio
-   - Direct communication with Claude
+- For integration with Cursor
+- JSON-RPC protocol over stdio
+- Direct communication with Claude
 
 ### Run in development mode
-#### Using the helper script
 
 ```bash
-python start_server.py
-```
-
-`start_server.py` checks that dependencies are installed, the `.env` file is properly configured and that port `8000` is available before launching the server. It prints the main endpoints and offers tips to fix common errors.
-
-#### Direct commands
-
-```bash
-# HTTP server (for testing)
-python main.py
-
-# MCP stdio server (for Cursor)
 python start_mcp_server.py
 ```
 
@@ -167,9 +145,8 @@ McpError: MCP error -32001: Request timed out
 ### Authentication error
 
 If you see "Not authenticated with Spotify":
-1. Visit `http://127.0.0.1:8000/auth`
-2. Complete the Spotify authentication flow
-3. Verify that the credentials in `env` are correct
+1. Run the `/auth` command in your MCP client
+2. Verify that the credentials in `env` are correct
 
 ### Browser not responding
 
