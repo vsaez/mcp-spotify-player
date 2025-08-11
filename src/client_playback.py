@@ -44,6 +44,16 @@ class SpotifyPlaybackClient:
         result = self.requester._make_request('PUT', f'/me/player/volume?volume_percent={volume_percent}')
         return result is not None
 
+    def set_repeat(self, state: str, device_id: Optional[str] = None) -> bool:
+        """Sets repeat mode: 'track', 'context', or 'off'"""
+        if state not in {'track', 'context', 'off'}:
+            return False
+        params = {'state': state}
+        if device_id:
+            params['device_id'] = device_id
+        result = self.requester._make_request('PUT', '/me/player/repeat', params=params)
+        return result is not None
+
     def get_current_playing(self) -> Optional[Dict[str, Any]]:
         """Gets the information of the currently playing song"""
         return self.requester._make_request('GET', '/me/player/currently-playing')

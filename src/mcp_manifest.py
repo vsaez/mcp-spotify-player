@@ -78,6 +78,27 @@ MANIFEST = {
             }
         },
         {
+            "name": "set_repeat",
+            "description": "Set the repeat mode for playback (track, context, or off)",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "state": {
+                        "type": "string",
+                        "enum": [
+                            "track",
+                            "context",
+                            "off"
+                        ],
+                        "description": "Repeat mode"
+                    }
+                },
+                "required": [
+                    "state"
+                ]
+            }
+        },
+        {
             "name": "get_current_playing",
             "description": "Retrieve information about the currently playing song",
             "inputSchema": {
