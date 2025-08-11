@@ -117,6 +117,15 @@ mcp-spotify-player/
    - Direct communication with Claude
 
 ### Run in development mode
+#### Using the helper script
+
+```bash
+python start_server.py
+```
+
+`start_server.py` checks that dependencies are installed, the `.env` file is properly configured and that port `8000` is available before launching the server. It prints the main endpoints and offers tips to fix common errors.
+
+#### Direct commands
 
 ```bash
 # HTTP server (for testing)
