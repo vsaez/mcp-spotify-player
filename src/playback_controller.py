@@ -158,6 +158,26 @@ class PlaybackController:
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    def get_devices(self) -> Dict[str, Any]:
+        """Get available playback devices"""
+        try:
+            devices_data = self.playback_client.get_devices()
+            if devices_data and devices_data.get('devices'):
+                devices = [
+                    {
+                        "id": d.get('id'),
+                        "name": d.get('name'),
+                        "type": d.get('type'),
+                        "is_active": d.get('is_active', False),
+                        "volume_percent": d.get('volume_percent'),
+                    }
+                    for d in devices_data['devices']
+                ]
+                return {"success": True, "devices": devices}
+            return {"success": False, "message": "No devices available"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
     def search_music(self, query: str, search_type: str = "track", limit: int = 10) -> Dict[str, Any]:
         """Search for music on Spotify"""
         try:
