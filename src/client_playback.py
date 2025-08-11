@@ -1,3 +1,4 @@
+import logging
 import sys
 from typing import Optional, Dict, Any, List
 class SpotifyPlaybackClient:
@@ -42,6 +43,17 @@ class SpotifyPlaybackClient:
         if not 0 <= volume_percent <= 100:
             return False
         result = self.requester._make_request('PUT', f'/me/player/volume?volume_percent={volume_percent}')
+        return result is not None
+
+    def set_repeat(self, state: str, device_id: Optional[str] = None) -> bool:
+        """Sets repeat mode: 'track', 'context', or 'off'"""
+        if state not in {'track', 'context', 'off'}:
+            return False
+        params = {'state': state}
+        if device_id:
+            params['device_id'] = device_id
+        result = self.requester._make_request('PUT', '/me/player/repeat', params=params)
+        logging.info(f"DEBUG: Setting repeat state to {state} with params {params} result: {result}")
         return result is not None
 
     def get_current_playing(self) -> Optional[Dict[str, Any]]:
