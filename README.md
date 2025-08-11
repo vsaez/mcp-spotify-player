@@ -92,16 +92,23 @@ Once authenticated, you can use these commands:
 ```
 mcp-spotify-player/
 ├── src/
-│   ├── config.py              # Configuration
-│   ├── spotify_client.py      # Spotify client
-│   ├── spotify_controller.py  # Main controller
-│   ├── mcp_models.py          # MCP models
-│   ├── mcp_server.py          # HTTP server (legacy)
-│   └── mcp_stdio_server.py    # MCP stdio server
-├── start_mcp_server.py        # MCP startup script
-├── main.py                    # Main HTTP server
-├── mcp-spotify-player.yaml    # MCP configuration
-└── requirements.txt           # Dependencies
+│   ├── __init__.py             # Package marker
+│   ├── client_auth.py          # Handles OAuth tokens
+│   ├── client_playback.py      # Playback client
+│   ├── client_playlists.py     # Playlists client
+│   ├── config.py               # Configuration
+│   ├── mcp_manifest.py         # MCP manifest
+│   ├── mcp_models.py           # MCP models
+│   ├── mcp_server.py           # HTTP server (legacy)
+│   ├── mcp_stdio_server.py     # MCP stdio server
+│   ├── playback_controller.py  # Playback controller
+│   ├── playlist_controller.py  # Playlist controller
+│   ├── spotify_client.py       # Spotify API wrapper
+│   └── spotify_controller.py   # High-level commands
+├── start_mcp_server.py         # MCP startup script
+├── main.py                     # Main HTTP server
+├── mcp-spotify-player.yaml     # MCP configuration
+└── requirements.txt            # Dependencies
 ```
 
 ### Available servers
