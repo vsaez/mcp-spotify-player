@@ -32,6 +32,7 @@ class MCPServer:
             "skip_next": self.controller.playback.skip_next,
             "skip_previous": self.controller.playback.skip_previous,
             "set_volume": self.controller.playback.set_volume,
+            "set_repeat": self.controller.playback.set_repeat,
             "get_current_playing": self.controller.playback.get_current_playing,
             "get_playback_state": self.controller.playback.get_playback_state,
             "get_devices": self.controller.playback.get_devices,
@@ -47,6 +48,7 @@ class MCPServer:
         # Optional validators and result formatters
         self.TOOL_VALIDATORS = {
             "set_volume": self._validate_set_volume,
+            "set_repeat": self._validate_set_repeat,
             "search_music": self._validate_search_music,
             "get_playlist_tracks": self._validate_get_playlist_tracks,
             "rename_playlist": self._validate_rename_playlist,
@@ -139,7 +141,7 @@ class MCPServer:
 
                 # Check authentication for commands that require it
                 if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
-                                 "set_volume", "get_current_playing", "get_playback_state", "get_devices", "get_playlist_tracks",
+                                 "set_volume", "set_repeat", "get_current_playing", "get_playback_state", "get_devices", "get_playlist_tracks",
                                  "rename_playlist", "clear_playlist", "create_playlist", "add_tracks_to_playlist"]:
 
                     logger.info(f"Checking authentication for {tool_name}")
@@ -218,6 +220,13 @@ class MCPServer:
     def _validate_set_volume(self, arguments: Dict[str, Any]):
         if arguments.get("volume_percent") is None:
             raise ValueError("volume_percent is required")
+
+    def _validate_set_repeat(self, arguments: Dict[str, Any]):
+        state = arguments.get("state")
+        if not state:
+            raise ValueError("state is required")
+        if state not in ["track", "context", "off"]:
+            raise ValueError("state must be 'track', 'context', or 'off'")
 
     def _validate_search_music(self, arguments: Dict[str, Any]):
         if not arguments.get("query"):

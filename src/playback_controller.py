@@ -104,6 +104,16 @@ class PlaybackController:
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    def set_repeat(self, state: str) -> Dict[str, Any]:
+        """Set the repeat mode"""
+        try:
+            success = self.playback_client.set_repeat(state)
+            if success:
+                return {"success": True, "message": f"Repeat mode set to {state}"}
+            return {"success": False, "message": "Could not set repeat mode"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
     def get_current_playing(self) -> Dict[str, Any]:
         """Gets the information of the current song"""
         try:
