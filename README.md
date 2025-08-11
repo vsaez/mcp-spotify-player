@@ -77,13 +77,20 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 
 Once authenticated, you can use these commands:
 
-- **Play music**: "Play Bohemian Rhapsody"
-- **Pause**: "Pause the music"
-- **Next**: "Next song"
-- **Previous**: "Previous song"
-- **Volume**: "Set volume to 50%"
-- **Search**: "Search for songs by Queen"
-- **Status**: "What’s playing?"
+- `play_music` — "Play Bohemian Rhapsody"
+- `pause_music` — "Pause the music"
+- `skip_next` — "Next song"
+- `skip_previous` — "Previous song"
+- `set_volume` — "Set volume to 50%"
+- `get_current_playing` — "What's playing?"
+- `get_playback_state` — "What's the playback state?"
+- `search_music` — "Search for songs by Queen"
+- `get_playlists` — "List my playlists"
+- `get_playlist_tracks` — "Show tracks in playlist 'Road Trip'"
+- `create_playlist` — "Create playlist 'Road Trip' with these songs..."
+- `rename_playlist` — "Rename playlist 'Road Trip' to 'Vacation'"
+- `clear_playlist` — "Remove all songs from playlist 'Road Trip'"
+- `add_tracks_to_playlist` — "Add these songs to playlist 'Road Trip'"
 
 ## 🔧 Development
 
