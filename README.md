@@ -83,6 +83,7 @@ Once authenticated, you can use these commands:
 - `skip_next` — "Next song"
 - `skip_previous` — "Previous song"
 - `set_volume` — "Set volume to 50%"
+- `set_repeat` — "Set repeat mode to `off`, `track`, or `context` (e.g., "Repeat current track")"
 - `get_current_playing` — "What's playing?"
 - `get_playback_state` — "What's the playback state?"
 - `get_devices` — "List my available devices"
