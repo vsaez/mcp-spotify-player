@@ -11,7 +11,10 @@ def test_spotify_client_clear_playlist():
     with patch.object(client, "_make_request", return_value={}) as mock_request:
         assert client.clear_playlist("playlist123") is True
         mock_request.assert_called_once_with(
-            "PUT", "/playlists/playlist123/tracks", json={"uris": []}
+            "PUT",
+            "/playlists/playlist123/tracks",
+            feature="playlists",
+            json={"uris": []},
         )
 
 

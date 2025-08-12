@@ -15,7 +15,7 @@ class SpotifyPlaylistsClient:
     def get_user_playlists(self, limit: int = 20) -> Optional[Dict[str, Any]]:
         """Gets the user's playlists"""
         params = {'limit': limit}
-        return self.requester._make_request('GET', '/me/playlists', params=params)
+        return self.requester._make_request('GET', '/me/playlists', feature='playlists', params=params)
 
     def create_playlist(
         self,
@@ -36,7 +36,7 @@ class SpotifyPlaylistsClient:
             'public': public,
         }
         result = self.requester._make_request(
-            'POST', f"/users/{user_profile['id']}/playlists", json=payload
+            'POST', f"/users/{user_profile['id']}/playlists", feature='playlists', json=payload
         )
         sys.stderr.write(
             f"DEBUG: Response creating playlist {playlist_name}: {result}\n"
@@ -46,7 +46,7 @@ class SpotifyPlaylistsClient:
     def get_playlist_tracks(self, playlist_id: str, limit: int = 20) -> Optional[Dict[str, Any]]:
         """Gets songs from a playlist"""
         params = {'limit': limit}
-        return self.requester._make_request('GET', f'/playlists/{playlist_id}/tracks', params=params)
+        return self.requester._make_request('GET', f'/playlists/{playlist_id}/tracks', feature='playlists', params=params)
 
     def rename_playlist(self, playlist_id: str, playlist_name: str) -> bool:
         """Rename a playlist from the user's library"""
@@ -54,6 +54,7 @@ class SpotifyPlaylistsClient:
         result = self.requester._make_request(
             'PUT',
             f'/playlists/{playlist_id}',
+            feature='playlists',
             json={"name": playlist_name}
         )
         sys.stderr.write(f"DEBUG: Response renaming playlist by id {playlist_id}: {result}\n")
@@ -65,6 +66,7 @@ class SpotifyPlaylistsClient:
         result = self.requester._make_request(
             'PUT',
             f'/playlists/{playlist_id}/tracks',
+            feature='playlists',
             json={"uris": []}
         )
         sys.stderr.write(f"DEBUG: Response clearing playlist by id {playlist_id}: {result}\n")
@@ -76,6 +78,7 @@ class SpotifyPlaylistsClient:
         result = self.requester._make_request(
             'POST',
             f'/playlists/{playlist_id}/tracks',
+            feature='playlists',
             json={'uris': track_uris},
         )
         sys.stderr.write(f"DEBUG: Response adding tracks to playlist {playlist_id}: {result}\n")

@@ -5,8 +5,8 @@ def test_set_repeat_client():
     client = SpotifyClient()
     calls = []
 
-    def fake_make_request(method, endpoint, params=None, json=None):
-        calls.append({'method': method, 'endpoint': endpoint, 'params': params})
+    def fake_make_request(method, endpoint, **kwargs):
+        calls.append({'method': method, 'endpoint': endpoint, 'params': kwargs.get('params')})
         return {}
 
     client._make_request = fake_make_request

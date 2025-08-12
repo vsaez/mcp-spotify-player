@@ -68,7 +68,8 @@ If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
 {
   "access_token": "ACCESS",
   "refresh_token": "REFRESH",
-  "expires_at": 1700000000
+  "expires_at": 1700000000,
+  "scopes": ["user-read-playback-state", "user-modify-playback-state"]
 }
 ```
 
@@ -123,6 +124,14 @@ Once authenticated, you can use these commands:
 - `rename_playlist` — "Rename playlist 'Road Trip' to 'Vacation'"
 - `clear_playlist` — "Remove all songs from playlist 'Road Trip'"
 - `add_tracks_to_playlist` — "Add these songs to playlist 'Road Trip'"
+
+### Required scopes
+
+| Feature | Scopes |
+| ------- | ------ |
+| Playback control & status | `user-read-playback-state`, `user-modify-playback-state`, `user-read-currently-playing` |
+| Playlist management | `playlist-read-private`, `playlist-read-collaborative`, `playlist-modify-private` |
+| Library access | `user-library-read`, `user-library-modify` |
 
 ## 🔧 Development
 

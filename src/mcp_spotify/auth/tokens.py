@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
 import requests
 import time
 
-from mcp_spotify.errors import InvalidTokenFileError, RefreshNotPossibleError
+from mcp_spotify.errors import (
+    InvalidTokenFileError,
+    MissingScopesError,
+    RefreshNotPossibleError,
+)
 from mcp_spotify_player.config import Config, resolve_tokens_path
 
 
@@ -18,6 +22,35 @@ class Tokens:
     access_token: str
     refresh_token: str
     expires_at: int
+    scopes: set[str] = field(default_factory=set)
+
+
+REQUIRED_SCOPES: dict[str, set[str]] = {
+    "playback": {
+        "user-read-playback-state",
+        "user-modify-playback-state",
+        "user-read-currently-playing",
+    },
+    "playlists": {
+        "playlist-read-private",
+        "playlist-read-collaborative",
+        "playlist-modify-private",
+    },
+}
+
+
+def check_scopes(tokens: Tokens, required: set[str]) -> None:
+    """Validate that ``tokens`` contain all ``required`` scopes.
+
+    Raises
+    ------
+    MissingScopesError
+        If any scope in ``required`` is missing.
+    """
+
+    missing = required - tokens.scopes
+    if missing:
+        raise MissingScopesError(missing)
 
 
 def needs_refresh(tokens: Tokens, now: int | None = None) -> bool:
@@ -50,10 +83,13 @@ def refresh_tokens(tokens: Tokens, client_id: str, client_secret: str) -> Tokens
         access_token=payload["access_token"],
         refresh_token=payload.get("refresh_token", tokens.refresh_token),
         expires_at=int(time.time()) + int(payload["expires_in"]),
+        scopes=tokens.scopes,
     )
 
     path = resolve_tokens_path()
-    path.write_text(json.dumps(asdict(refreshed)))
+    data = asdict(refreshed)
+    data["scopes"] = sorted(refreshed.scopes)
+    path.write_text(json.dumps(data))
     return refreshed
 
 
@@ -111,8 +147,19 @@ def load_tokens(path: Path) -> Tokens:
         detail = "; ".join(parts)
         raise InvalidTokenFileError(f"Token file has errors: {detail}")
 
+    # scopes may be provided as space-separated string or list
+    raw_scopes = data.get("scopes") or data.get("scope", "")
+    scopes: set[str]
+    if isinstance(raw_scopes, list):
+        scopes = set(str(s) for s in raw_scopes)
+    elif isinstance(raw_scopes, str):
+        scopes = set(raw_scopes.split())
+    else:  # pragma: no cover - unexpected types
+        scopes = set()
+
     return Tokens(
         access_token=data["access_token"],
         refresh_token=data["refresh_token"],
         expires_at=data["expires_at"],
+        scopes=scopes,
     )

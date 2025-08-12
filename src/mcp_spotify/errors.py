@@ -20,3 +20,20 @@ class TokenExpiredError(McpUserError):
 class RefreshNotPossibleError(McpUserError):
     """Raised when refreshing the Spotify access token is not possible."""
 
+
+class MissingScopesError(McpUserError):
+    """Raised when the OAuth token lacks required scopes."""
+
+    def __init__(self, scopes: set[str]):
+        message = ", ".join(sorted(scopes))
+        super().__init__(f"Missing required scopes: {message}")
+        self.scopes = scopes
+
+
+class PremiumRequiredError(McpUserError):
+    """Raised when an operation requires Spotify Premium."""
+
+
+class NoActiveDeviceError(McpUserError):
+    """Raised when there is no active playback device."""
+
