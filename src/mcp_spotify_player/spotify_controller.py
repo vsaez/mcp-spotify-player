@@ -1,6 +1,9 @@
 import logging
-from typing import Any
+from typing import Any, Callable, Optional
 
+from mcp_spotify.auth.tokens import Tokens
+from mcp_spotify.errors import InvalidTokenFileError
+from mcp_spotify_player.client_auth import is_token_expired
 from mcp_spotify_player.playback_controller import PlaybackController
 from mcp_spotify_player.playlist_controller import PlaylistController
 from mcp_spotify_player.spotify_client import SpotifyClient
@@ -8,17 +11,26 @@ from mcp_spotify_player.spotify_client import SpotifyClient
 logger = logging.getLogger(__name__)
 
 
+TokensProvider = Callable[[], Optional[Tokens]]
+
+
 class SpotifyController:
     """Facade that groups playback and playlist controllers."""
 
-    def __init__(self):
-        self.client = SpotifyClient()
+    def __init__(self, tokens_provider: TokensProvider):
+        self.tokens_provider = tokens_provider
+        self.client = SpotifyClient(tokens_provider)
         self.playback = PlaybackController(self.client)
         self.playlists = PlaylistController(self.client)
 
     def is_authenticated(self) -> bool:
-        """Checks if the user is authenticated"""
-        return self.playback.is_authenticated()
+        """Checks if valid authentication tokens are available."""
+
+        try:
+            tokens = self.tokens_provider()
+        except InvalidTokenFileError:
+            return False
+        return tokens is not None and not is_token_expired(tokens)
 
     def __getattr__(self, name: str) -> Any:
         if hasattr(self.playback, name):

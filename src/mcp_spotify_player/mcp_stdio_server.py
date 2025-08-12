@@ -7,8 +7,11 @@ Implements the MCP protocol over JSON-RPC for communication with Cursor
 import json
 import logging
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+from mcp_spotify.auth.tokens import Tokens
+from mcp_spotify.errors import InvalidTokenFileError, McpUserError
+from mcp_spotify_player.client_auth import try_load_tokens
 from mcp_spotify_player.config import Config
 from mcp_spotify_player.mcp_manifest import MANIFEST
 from mcp_spotify_player.spotify_controller import SpotifyController
@@ -21,7 +24,25 @@ logger = logging.getLogger(__name__)
 class MCPServer:
     def __init__(self):
         self.config = Config()
-        self.controller = SpotifyController()
+
+        try:
+            tokens = try_load_tokens()
+            self.auth_status = "OK"
+        except InvalidTokenFileError as e:
+            logger.error(str(e))
+            tokens = None
+            self.auth_status = "INVALID_TOKEN_FILE"
+
+        self.current_tokens: Optional[Tokens] = tokens
+
+        def tokens_provider() -> Optional[Tokens]:
+            if self.auth_status == "INVALID_TOKEN_FILE":
+                raise InvalidTokenFileError(
+                    "Token file is invalid. Fix tokens.json or run /auth to regenerate it."
+                )
+            return self.current_tokens
+
+        self.controller = SpotifyController(tokens_provider)
         self.request_id = 0
         # MCP Manifest
         self.manifest = MANIFEST
@@ -67,7 +88,6 @@ class MCPServer:
             "get_playlist_tracks": self._format_json_result,
         }
 
-
     def send_response(self, response: Dict[str, Any]):
         """Send a JSON-RPC response over stdout"""
         json_response = json.dumps(response, ensure_ascii=False) + "\n"
@@ -84,10 +104,7 @@ class MCPServer:
         error_response = {
             "jsonrpc": "2.0",
             "id": request_id,
-            "error": {
-                "code": code,
-                "message": message
-            }
+            "error": {"code": code, "message": message},
         }
         self.send_response(error_response)
 
@@ -98,100 +115,49 @@ class MCPServer:
             "id": request_id,
             "result": {
                 "protocolVersion": "2025-06-18",
-                "capabilities": {
-                    "tools": {}
-                },
-                "serverInfo": {
-                    "name": "spotify-player",
-                    "version": "1.0.0"
-                }
-            }
+                "capabilities": {"tools": {}},
+                "serverInfo": {"name": "spotify-player", "version": "1.0.0"},
+            },
         }
         self.send_response(response)
 
     def handle_tools_list(self, request_id: Any):
         """List available tools"""
-        response = {
-            "jsonrpc": "2.0",
-            "id": request_id,
-            "result": {
-                "tools": self.manifest["tools"]
-            }
-        }
+        response = {"jsonrpc": "2.0", "id": request_id, "result": {"tools": self.manifest["tools"]}}
         self.send_response(response)
 
     def handle_tools_call(self, request_id: Any, params: Dict[str, Any]):
         """Execute a tool"""
         try:
-            # Handle both array and direct formats
             if "calls" in params:
-                # Format: {"calls": [{"name": "...", "arguments": {...}}]}
                 calls = params.get("calls", [])
             else:
-                # Format: {"name": "...", "arguments": {...}}
                 calls = [{"name": params.get("name"), "arguments": params.get("arguments", {})}]
 
             results = []
-
             for call in calls:
                 tool_name = call.get("name")
                 arguments = call.get("arguments", {})
-
                 if not tool_name:
                     continue
 
-                # Check authentication for commands that require it
-                if tool_name in ["play_music", "pause_music", "skip_next", "skip_previous",
-                                 "set_volume", "set_repeat", "get_current_playing", "get_playback_state", "get_devices", "get_playlist_tracks",
-                                 "rename_playlist", "clear_playlist", "create_playlist", "add_tracks_to_playlist"]:
-
-                    logger.info(f"Checking authentication for {tool_name}")
-                    if not self.controller.is_authenticated():
-                        logger.warning(f"Not authenticated for {tool_name}")
-                        results.append({
-                            "name": tool_name,
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": "Not authenticated with Spotify. You need to authenticate first."
-                                }
-                            ]
-                        })
-                        continue
-                    else:
-                        logger.info(f"Authenticated successfully for {tool_name}")
-
-                # Execute the command
                 logger.info(f"Executing {tool_name} with arguments: {arguments}")
-                result = self.execute_tool(tool_name, arguments)
-                logger.info(f"Result of {tool_name}: {result}")
-                results.append({
-                    "name": tool_name,
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": result
-                        }
-                    ]
-                })
+                try:
+                    result = self.execute_tool(tool_name, arguments)
+                    results.append(
+                        {"name": tool_name, "content": [{"type": "text", "text": result}]}
+                    )
+                except McpUserError as exc:
+                    logger.warning(f"User error executing {tool_name}: {exc}")
+                    results.append(
+                        {"name": tool_name, "content": [{"type": "text", "text": str(exc)}]}
+                    )
 
             if len(results) == 1:
-                response = {
-                    "jsonrpc": "2.0",
-                    "id": request_id,
-                    "result": results[0]
-                }
+                response = {"jsonrpc": "2.0", "id": request_id, "result": results[0]}
             else:
-                response = {
-                    "jsonrpc": "2.0",
-                    "id": request_id,
-                    "result": {
-                        "calls": results
-                    }
-                }
-
+                response = {"jsonrpc": "2.0", "id": request_id, "result": {"calls": results}}
             self.send_response(response)
-
         except Exception as e:
             logger.error(f"Error executing tool: {str(e)}")
             self.send_error(request_id, -32603, f"Internal error: {str(e)}")
@@ -211,6 +177,8 @@ class MCPServer:
             formatter = self.RESULT_FORMATTERS.get(tool_name, self._default_formatter)
             return formatter(result, arguments)
 
+        except McpUserError:
+            raise
         except Exception as e:
             logger.error(f"Error executing {tool_name}: {str(e)}")
             return f"Error: {str(e)}"
@@ -266,28 +234,32 @@ class MCPServer:
     # -----------------------
     def _default_formatter(self, result: Any, _arguments: Dict[str, Any]) -> str:
         if isinstance(result, dict):
-            if result.get('success'):
-                return result.get('message', 'Success')
-            return result.get('message', 'Error')
+            if result.get("success"):
+                return result.get("message", "Success")
+            return result.get("message", "Error")
         return str(result)
 
-    def _format_get_current_playing(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
-        if result.get('success'):
-            track = result.get('track', {})
-            is_playing = result.get('is_playing', False)
+    def _format_get_current_playing(
+        self, result: Dict[str, Any], _arguments: Dict[str, Any]
+    ) -> str:
+        if result.get("success"):
+            track = result.get("track", {})
+            is_playing = result.get("is_playing", False)
             if track:
                 status = "Playing" if is_playing else "Paused"
-                return f"{status}: {track.get('name', 'Unknown')} by {track.get('artist', 'Unknown')}"
+                return (
+                    f"{status}: {track.get('name', 'Unknown')} by {track.get('artist', 'Unknown')}"
+                )
             return "No music is currently playing"
         return f"Could not retrieve information: {result.get('message', 'Unknown error')}"
 
     def _format_get_playback_state(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
-        if result.get('success'):
-            state = result.get('state', {})
-            current_track = state.get('current_track', {})
-            is_playing = state.get('is_playing', False)
-            volume = state.get('volume_percent', 0)
-            device = state.get('device_name', 'Unknown')
+        if result.get("success"):
+            state = result.get("state", {})
+            current_track = state.get("current_track", {})
+            is_playing = state.get("is_playing", False)
+            volume = state.get("volume_percent", 0)
+            device = state.get("device_name", "Unknown")
             if current_track:
                 status = "Playing" if is_playing else "Paused"
                 track_info = f"{current_track.get('name', 'Unknown')} - {current_track.get('artist', 'Unknown')}"
@@ -296,12 +268,9 @@ class MCPServer:
         return f"Could not retrieve state: {result.get('message', 'Unknown error')}"
 
     def _format_json_result(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
-        if result.get('success'):
+        if result.get("success"):
             return json.dumps(result)
-        return json.dumps({
-            "success": False,
-            "message": result.get('message', 'Unknown error')
-        })
+        return json.dumps({"success": False, "message": result.get("message", "Unknown error")})
 
     def run(self):
         """Run the MCP server"""
@@ -337,7 +306,9 @@ class MCPServer:
                         # Optional methods not implemented
                         logger.info(f"Optional method not implemented: {method}")
                         if request_id is not None:
-                            self.send_error(request_id, -32601, f"Method '{method}' not implemented")
+                            self.send_error(
+                                request_id, -32601, f"Method '{method}' not implemented"
+                            )
                     else:
                         logger.warning(f"Unsupported method: {method}")
                         if request_id is not None:
