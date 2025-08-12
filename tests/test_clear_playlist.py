@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import patch
 
-from src.spotify_client import SpotifyClient
-from src.spotify_controller import SpotifyController
-from src.mcp_stdio_server import MCPServer
+from mcp_spotify_player.spotify_client import SpotifyClient
+from mcp_spotify_player.spotify_controller import SpotifyController
+from mcp_spotify_player.mcp_stdio_server import MCPServer
 
 
 def test_spotify_client_clear_playlist():

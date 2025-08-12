@@ -6,7 +6,7 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.spotify_client import SpotifyClient
+from mcp_spotify_player.spotify_client import SpotifyClient
 
 
 def test_search_methods():

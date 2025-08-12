@@ -1,4 +1,4 @@
-from src.mcp_stdio_server import MCPServer
+from mcp_spotify_player.mcp_stdio_server import MCPServer
 
 
 def test_create_playlist_in_stdio_manifest():

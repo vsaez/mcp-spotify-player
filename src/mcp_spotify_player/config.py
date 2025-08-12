@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -23,8 +24,8 @@ class Config:
     SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
     SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
     SPOTIFY_API_BASE = "https://api.spotify.com/v1"
-    
-    # Scopes necesarios para Spotify
+
+    # Scopes need for Spotify API access
     SPOTIFY_SCOPES = [
         "user-read-playback-state",        # Read current playback state
         "user-modify-playback-state",      # Control playback (play, pause, skip)

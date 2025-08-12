@@ -1,6 +1,6 @@
-from src.client_auth import SpotifyAuthClient
-from src.client_playback import SpotifyPlaybackClient
-from src.client_playlists import SpotifyPlaylistsClient
+from mcp_spotify_player.client_auth import SpotifyAuthClient
+from mcp_spotify_player.client_playback import SpotifyPlaybackClient
+from mcp_spotify_player.client_playlists import SpotifyPlaylistsClient
 
 
 class SpotifyClient:

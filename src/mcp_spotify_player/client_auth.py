@@ -1,11 +1,13 @@
-import logging
-import requests
 import json
-import time
+import logging
 import os
 import sys
-from typing import Optional, Dict, Any
-from src.config import Config
+import time
+from typing import Any, Dict, Optional
+
+import requests
+
+from mcp_spotify_player.config import Config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,8 +23,14 @@ class SpotifyAuthClient:
         self.config = Config()
 
         # Get project dir path
-        self.project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.tokens_file = os.path.join(self.project_dir, 'tokens.json')
+        # Determine tokens storage path
+        tokens_path = os.getenv("MCP_SPOTIFY_TOKENS_PATH")
+        if tokens_path:
+            self.tokens_file = os.path.expanduser(tokens_path)
+        else:
+            self.tokens_file = os.path.expanduser(
+                os.path.join("~", ".config", "mcp_spotify_player", "tokens.json")
+            )
 
     def get_auth_url(self) -> str:
         """Generate Spotify Authorization URL"""
@@ -83,13 +91,14 @@ class SpotifyAuthClient:
             'refresh_token': self.refresh_token,
             'expires_at': self.token_expires_at
         }
+        os.makedirs(os.path.dirname(self.tokens_file), exist_ok=True)
         with open(self.tokens_file, 'w') as f:
             json.dump(token_data, f)
 
     def _load_tokens(self) -> bool:
         """Load tokens from local file"""
         try:
-            with open(self.tokens_file, 'r') as f:
+            with open(self.tokens_file) as f:
                 token_data = json.load(f)
             self.access_token = token_data['access_token']
             self.refresh_token = token_data['refresh_token']

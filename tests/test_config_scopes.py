@@ -1,5 +1,5 @@
 import pytest
-from src.config import Config
+from mcp_spotify_player.config import Config
 
 
 def test_playlist_modify_private_scope_present():

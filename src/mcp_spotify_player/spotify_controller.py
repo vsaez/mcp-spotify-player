@@ -1,9 +1,9 @@
-from typing import Any
 import logging
+from typing import Any
 
-from src.spotify_client import SpotifyClient
-from src.playback_controller import PlaybackController
-from src.playlist_controller import PlaylistController
+from mcp_spotify_player.playback_controller import PlaybackController
+from mcp_spotify_player.playlist_controller import PlaylistController
+from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = logging.getLogger(__name__)
 

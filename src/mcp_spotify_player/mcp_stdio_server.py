@@ -5,12 +5,13 @@ Implements the MCP protocol over JSON-RPC for communication with Cursor
 """
 
 import json
-import sys
 import logging
-from typing import Dict, Any
-from src.config import Config
-from src.spotify_controller import SpotifyController
-from src.mcp_manifest import MANIFEST
+import sys
+from typing import Any, Dict
+
+from mcp_spotify_player.config import Config
+from mcp_spotify_player.mcp_manifest import MANIFEST
+from mcp_spotify_player.spotify_controller import SpotifyController
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
