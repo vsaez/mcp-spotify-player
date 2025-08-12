@@ -31,7 +31,7 @@ def test_missing_keys(tmp_path: Path) -> None:
 
 def test_wrong_types(tmp_path: Path) -> None:
     path = tmp_path / "tokens.json"
-    path.write_text('{"access_token": 123, "refresh_token": "r", "expires_at": "now"}')
+    path.write_text('{"access_token": 123, "refresh_token": "r", "expires_at": "1"}')
     with pytest.raises(InvalidTokenFileError) as exc:
         load_tokens(path)
     assert "invalid types" in str(exc.value)
