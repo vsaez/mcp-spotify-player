@@ -173,33 +173,3 @@ class SpotifyAuthClient:
             except Exception:
                 sys.stderr.write(f"DEBUG: Error for {endpoint}: {response}\n")
                 return {"error": response.text}
-
-    # def _make_request(self, method: str, endpoint: str, **kwargs) -> Optional[Dict[str, Any]]:
-    #     """Make a request to the Spotify API"""
-    #     token = self._get_valid_token()
-    #     if not token:
-    #         sys.stderr.write(f"INFO: Could not obtain valid token for {endpoint}\n")
-    #         return None
-    #     headers = {
-    #         'Authorization': f'Bearer {token}',
-    #         'Content-Type': 'application/json'
-    #     }
-    #     url = f"{self.config.SPOTIFY_API_BASE}{endpoint}"
-    #     params_str = ""
-    #     if 'params' in kwargs:
-    #         params_str = f" with params : {kwargs['params']}"
-    #     sys.stderr.write(f"DEBUG: Making request {method} to {endpoint}{params_str}\n")
-    #     response = requests.request(method, url, headers=headers, **kwargs)
-    #     sys.stderr.write(f"DEBUG: Response {response.status_code} for {endpoint}\n")
-    #     if response.status_code in [200, 201, 204]:
-    #         result = response.json() if response.content else {}
-    #         sys.stderr.write(f"DEBUG: Successful outcome for{endpoint}: {result}\n")
-    #         return result
-    #     else:
-    #         sys.stderr.write(f"DEBUG: Error {response.status_code} for {endpoint}: {response.text}\n")
-    #         try:
-    #             sys.stderr.write(f"DEBUG: Trying to parse JSON response for  {endpoint}\n. Response: {response.json()}\n")
-    #             return response.json()
-    #         except Exception:
-    #             sys.stderr.write(f"DEBUG: Error for {endpoint}: {response}\n")
-    #             return {"error": response.text}
