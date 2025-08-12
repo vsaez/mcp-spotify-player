@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from mcp_spotify.auth.tokens import Tokens, load_tokens
+from mcp_spotify.auth.tokens import Tokens, load_tokens, needs_refresh
 from mcp_spotify_player.config import Config, resolve_tokens_path
 
 # Configure logging
@@ -30,14 +30,9 @@ def try_load_tokens() -> Optional[Tokens]:
 
 
 def is_token_expired(tokens: Tokens, now: int | None = None) -> bool:
-    """Return ``True`` if ``tokens`` are expired.
+    """Compatibility wrapper around :func:`needs_refresh`."""
 
-    A safety margin of 60 seconds is applied.
-    """
-
-    if now is None:
-        now = int(time.time())
-    return now >= tokens.expires_at - 60
+    return needs_refresh(tokens, now)
 
 
 class SpotifyAuthClient:

@@ -15,3 +15,8 @@ class NotAuthenticatedError(McpUserError):
 
 class TokenExpiredError(McpUserError):
     """Raised when the Spotify access token has expired."""
+
+
+class RefreshNotPossibleError(McpUserError):
+    """Raised when refreshing the Spotify access token is not possible."""
+

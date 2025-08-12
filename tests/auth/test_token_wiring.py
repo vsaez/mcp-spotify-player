@@ -1,4 +1,6 @@
 import json
+import json
+import json
 from pathlib import Path
 
 import pytest
@@ -7,7 +9,7 @@ from mcp_spotify.auth.tokens import Tokens
 from mcp_spotify.errors import (
     InvalidTokenFileError,
     NotAuthenticatedError,
-    TokenExpiredError,
+    RefreshNotPossibleError,
 )
 from mcp_spotify_player.client_auth import try_load_tokens
 from mcp_spotify_player.spotify_client import SpotifyClient
@@ -38,13 +40,13 @@ def test_invalid_token_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
         client.playback.get_playback_state()
 
 
-def test_expired_tokens(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_missing_refresh_token(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     path = tmp_path / "tokens.json"
-    data = {"access_token": "a", "refresh_token": "r", "expires_at": 0}
+    data = {"access_token": "a", "refresh_token": "", "expires_at": 0}
     path.write_text(json.dumps(data))
     monkeypatch.setenv("MCP_SPOTIFY_TOKENS_PATH", str(path))
     tokens = try_load_tokens()
     assert tokens is not None
     client = SpotifyClient(lambda: tokens)
-    with pytest.raises(TokenExpiredError):
+    with pytest.raises(RefreshNotPossibleError):
         client.playback.get_playback_state()
