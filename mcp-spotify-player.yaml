@@ -1,17 +1,17 @@
 # MCP Spotify Player Configuration
-# Guarda este archivo como mcp-spotify-player.yaml
-# y configúralo en tu cliente MCP (Claude Desktop, etc.)
+# Save this file as mcp-spotify-player.yaml
+# and configure it in your MCP client (Claude Desktop, etc.)
 
 mcpServers:
   spotify-player:
     command: mcp-spotify-player
     args: []
     env:
-      # Asegúrate de que estas variables estén configuradas
-      SPOTIFY_CLIENT_ID: "tu_client_id_aqui"
-      SPOTIFY_CLIENT_SECRET: "tu_client_secret_aqui"
+      # Make sure these variables are set
+      SPOTIFY_CLIENT_ID: "your_client_id_here"
+      SPOTIFY_CLIENT_SECRET: "your_secret_id_here"
       SPOTIFY_REDIRECT_URI: "http://127.0.0.1:8000/auth/callback"
-    cwd: "Z:/projects/mcp/mcp-spotify-player"  # Cambia esto por tu ruta real
-    description: "Servidor MCP para controlar Spotify desde Claude"
+    cwd: "C:/fake/path/to/mcp-spotify-player"  # change to your project directory
+    description: "MCP server to control Spotify from Claude"
     capabilities:
       tools: {}

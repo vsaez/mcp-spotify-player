@@ -23,8 +23,14 @@ class SpotifyAuthClient:
         self.config = Config()
 
         # Get project dir path
-        self.project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.tokens_file = os.path.join(self.project_dir, 'tokens.json')
+        # Determine tokens storage path
+        tokens_path = os.getenv("MCP_SPOTIFY_TOKENS_PATH")
+        if tokens_path:
+            self.tokens_file = os.path.expanduser(tokens_path)
+        else:
+            self.tokens_file = os.path.expanduser(
+                os.path.join("~", ".config", "mcp_spotify_player", "tokens.json")
+            )
 
     def get_auth_url(self) -> str:
         """Generate Spotify Authorization URL"""
@@ -85,6 +91,7 @@ class SpotifyAuthClient:
             'refresh_token': self.refresh_token,
             'expires_at': self.token_expires_at
         }
+        os.makedirs(os.path.dirname(self.tokens_file), exist_ok=True)
         with open(self.tokens_file, 'w') as f:
             json.dump(token_data, f)
 

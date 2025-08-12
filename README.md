@@ -22,34 +22,45 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 ## 🔧 Installation
 
 1. **Clone the repository**:
+
 ```bash
 git clone <your-repository>
 cd mcp-spotify-player
 ```
 
 2. **Install**:
+
 ```bash
 pip install .
 ```
 
 For development:
+
 ```bash
 pip install -e .
 ```
 
 3. **Set up environment variables**:
+
 ```bash
 cp env.example env
 ```
 
 Edit the `env` file with your Spotify credentials:
+
 ```env
-SPOTIFY_CLIENT_ID=your_client_id_here
-SPOTIFY_CLIENT_SECRET=your_client_secret_here
-SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/auth/callback
+   SPOTIFY_CLIENT_ID=your_client_id_here
+   SPOTIFY_CLIENT_SECRET=your_client_secret_here
+   SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/auth/callback
+   # Optional: custom path to store OAuth tokens
+   # Defaults to ~/.config/mcp_spotify_player/tokens.json
+   MCP_SPOTIFY_TOKENS_PATH=/path/to/tokens.json
 ```
 
-Note: dependencies are now managed with `pyproject.toml`.
+Note: dependencies are managed with `pyproject.toml`.
+
+If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
+   `~/.config/mcp_spotify_player/tokens.json` by default.
 
 ## 🔐 Spotify Configuration
 
@@ -68,8 +79,8 @@ Note: dependencies are now managed with `pyproject.toml`.
    ```
 
 2. **Edit the configuration**:
-   - Change `cwd` to the actual path of your project
-   - Set environment variables with your credentials
+    - Change `cwd` to the actual path of your project
+    - Set environment variables with your credentials
 
 3. **Restart Cursor** to load the new configuration
 
@@ -148,11 +159,13 @@ python -m mcp_spotify_player
 ### Timeout error in Cursor
 
 If you see this error in Cursor logs:
+
 ```
 McpError: MCP error -32001: Request timed out
 ```
 
 **Solution**:
+
 1. Make sure you are using `mcp-spotify-player` in the MCP configuration
 2. Ensure environment variables are set
 3. Check that `cwd` in the configuration is correct
@@ -160,12 +173,14 @@ McpError: MCP error -32001: Request timed out
 ### Authentication error
 
 If you see "Not authenticated with Spotify":
+
 1. Run the `/auth` command in your MCP client
 2. Verify that the credentials in `env` are correct
 
 ### Browser not responding
 
-**IMPORTANT**: The MCP stdio server does NOT use HTTP. Do not open the browser when using Cursor. The server communicates directly via stdio.
+**IMPORTANT**: The MCP stdio server does NOT use HTTP. Do not open the browser when using Cursor. The server
+communicates directly via stdio.
 
 ## 📝 License
 
@@ -182,6 +197,7 @@ MIT License - see LICENSE file for details.
 ## 📞 Support
 
 If you have issues:
+
 1. Check the troubleshooting section
 2. Open an issue on GitHub
 3. Include error logs and your configuration
