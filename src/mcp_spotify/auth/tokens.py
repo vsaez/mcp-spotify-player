@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -74,11 +75,15 @@ def load_tokens(path: Path) -> Tokens:
     InvalidTokenFileError
         If the file is missing, malformed, or lacks required fields.
     """
+    logging.info(f"Loading tokens from {path}")
     if not path.exists():
         raise InvalidTokenFileError(f"Token file not found: {path}")
 
     try:
         data: dict[str, Any] = json.loads(path.read_text())
+        # Normalize expires_at to an integer timestamp
+        if "expires_at" in data:
+            data["expires_at"] = int(float(data["expires_at"]))
     except json.JSONDecodeError as exc:
         raise InvalidTokenFileError("Token file is not valid JSON") from exc
 
@@ -91,6 +96,7 @@ def load_tokens(path: Path) -> Tokens:
     invalid: list[str] = []
 
     for key, typ in required:
+        logging.info(f"Checking key '{key}' of type {typ.__name__}. Value: {data.get(key)}")
         if key not in data:
             missing.append(key)
         elif not isinstance(data[key], typ):
