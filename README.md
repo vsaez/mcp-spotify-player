@@ -62,6 +62,16 @@ Note: dependencies are managed with `pyproject.toml`.
 If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
    `~/.config/mcp_spotify_player/tokens.json` by default.
 
+### Token file format
+
+```json
+{
+  "access_token": "ACCESS",
+  "refresh_token": "REFRESH",
+  "expires_at": 1700000000
+}
+```
+
 ## 🔐 Spotify Configuration
 
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
