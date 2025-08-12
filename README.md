@@ -42,7 +42,13 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
    SPOTIFY_CLIENT_ID=your_client_id_here
    SPOTIFY_CLIENT_SECRET=your_client_secret_here
    SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/auth/callback
+   # Optional: custom path to store OAuth tokens
+   # Defaults to ~/.config/mcp_spotify_player/tokens.json
+   MCP_SPOTIFY_TOKENS_PATH=/path/to/tokens.json
    ```
+
+   If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
+   `~/.config/mcp_spotify_player/tokens.json` by default.
 
 ## 🔐 Spotify Configuration
 
