@@ -42,6 +42,7 @@ class SpotifyAuthClient:
         self.access_token = None
         self.refresh_token = None
         self.token_expires_at = 0
+        self.scopes: list[str] = []
         self.config = Config()
 
         # Get project dir path
@@ -80,7 +81,7 @@ class SpotifyAuthClient:
             token_data = response.json()
             self.access_token = token_data["access_token"]
             self.refresh_token = token_data.get("refresh_token")
-
+            self.scopes = token_data.get("scope", "").split()
             self.token_expires_at = int(time.time()) + int(token_data["expires_in"])
             self._save_tokens()
             return True
@@ -113,6 +114,7 @@ class SpotifyAuthClient:
             "access_token": self.access_token,
             "refresh_token": self.refresh_token,
             "expires_at": int(self.token_expires_at),
+            "scopes": self.scopes,
         }
         os.makedirs(os.path.dirname(self.tokens_file), exist_ok=True)
         with open(self.tokens_file, "w") as f:
@@ -126,6 +128,7 @@ class SpotifyAuthClient:
             self.access_token = token_data["access_token"]
             self.refresh_token = token_data["refresh_token"]
             self.token_expires_at = token_data["expires_at"]
+            self.scopes = token_data.get("scopes", [])
             return True
         except FileNotFoundError:
             return False
