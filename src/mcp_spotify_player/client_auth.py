@@ -85,7 +85,8 @@ class SpotifyAuthClient:
             token_data = response.json()
             self.access_token = token_data["access_token"]
             self.refresh_token = token_data.get("refresh_token")
-            self.token_expires_at = time.time() + token_data["expires_in"]
+
+            self.token_expires_at = int(time.time()) + int(token_data["expires_in"])
             self._save_tokens()
             return True
         return False
@@ -104,7 +105,7 @@ class SpotifyAuthClient:
         if response.status_code == 200:
             token_data = response.json()
             self.access_token = token_data["access_token"]
-            self.token_expires_at = time.time() + token_data["expires_in"]
+            self.token_expires_at = int(time.time()) + int(token_data["expires_in"])
             if "refresh_token" in token_data:
                 self.refresh_token = token_data["refresh_token"]
             self._save_tokens()
@@ -116,7 +117,7 @@ class SpotifyAuthClient:
         token_data = {
             "access_token": self.access_token,
             "refresh_token": self.refresh_token,
-            "expires_at": self.token_expires_at,
+            "expires_at": int(self.token_expires_at),
         }
         os.makedirs(os.path.dirname(self.tokens_file), exist_ok=True)
         with open(self.tokens_file, "w") as f:
