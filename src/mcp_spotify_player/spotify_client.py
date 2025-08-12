@@ -10,7 +10,6 @@ from mcp_spotify.auth.tokens import (
     refresh_tokens,
 )
 from mcp_spotify.errors import (
-    MissingScopesError,
     NoActiveDeviceError,
     NotAuthenticatedError,
     PremiumRequiredError,
