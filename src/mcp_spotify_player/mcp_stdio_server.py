@@ -7,12 +7,17 @@ Implements the MCP protocol over JSON-RPC for communication with Cursor
 import json
 import logging
 import sys
+import time
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
+import platform
+
+import mcp_spotify_player
 
 from mcp_spotify.auth.tokens import Tokens
 from mcp_spotify.errors import InvalidTokenFileError, McpUserError
 from mcp_spotify_player.client_auth import try_load_tokens
-from mcp_spotify_player.config import Config
+from mcp_spotify_player.config import Config, resolve_tokens_path
 from mcp_spotify_player.mcp_manifest import MANIFEST
 from mcp_spotify_player.spotify_controller import SpotifyController
 
@@ -65,6 +70,7 @@ class MCPServer:
             "clear_playlist": self.controller.playlists.clear_playlist,
             "create_playlist": self.controller.playlists.create_playlist,
             "add_tracks_to_playlist": self.controller.playlists.add_tracks_to_playlist,
+            "diagnose": self._diagnose,
         }
 
         # Optional validators and result formatters
@@ -182,6 +188,36 @@ class MCPServer:
         except Exception as e:
             logger.error(f"Error executing {tool_name}: {str(e)}")
             return f"Error: {str(e)}"
+
+    def _diagnose(self) -> str:
+        path = resolve_tokens_path()
+        lines: list[str] = [f"tokens_path: {path}"]
+        try:
+            tokens = try_load_tokens()
+        except InvalidTokenFileError:
+            tokens = None
+            lines.append("tokens: invalid")
+        if tokens:
+            expires_dt = datetime.fromtimestamp(tokens.expires_at, tz=timezone.utc)
+            minutes = int((tokens.expires_at - time.time()) / 60)
+            lines.append(
+                f"expires_at: {expires_dt.isoformat()} ({minutes} min)"
+            )
+            lines.append(
+                f"refresh_token: {'yes' if tokens.refresh_token else 'no'}"
+            )
+            scopes = sorted(tokens.scopes)
+            lines.append("scopes: " + (" ".join(scopes) if scopes else "none"))
+            missing = sorted(set(Config.SPOTIFY_SCOPES) - tokens.scopes)
+            lines.append(
+                "missing_scopes: " + (" ".join(missing) if missing else "none")
+            )
+        elif "tokens: invalid" not in lines:
+            lines.append("tokens: missing")
+
+        lines.append(f"python: {platform.python_version()}")
+        lines.append(f"package: {mcp_spotify_player.__version__}")
+        return "\n".join(lines)
 
     # -----------------------
     # Validators

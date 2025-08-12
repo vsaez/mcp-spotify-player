@@ -265,6 +265,11 @@ MANIFEST = {
                     "track_uris"
                 ]
             }
+        },
+        {
+            "name": "diagnose",
+            "description": "Display diagnostic information about authentication and environment",
+            "inputSchema": {"type": "object", "properties": {}}
         }
     ]
 }
