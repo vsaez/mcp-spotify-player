@@ -1,10 +1,17 @@
 import logging
 from typing import Any, Dict, List, Optional
 
+from mcp_spotify_player.client_playback import SpotifyPlaybackClient
 from mcp_spotify_player.mcp_models import TrackInfo
 from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = logging.getLogger(__name__)
+
+
+def queue_add(uri: str, device_id: str | None = None) -> dict:
+    playback = SpotifyPlaybackClient()
+    playback.add_to_queue(uri, device_id)
+    return {"status": "ok", "queued_uri": uri, "device_id": device_id}
 
 
 class PlaybackController:
