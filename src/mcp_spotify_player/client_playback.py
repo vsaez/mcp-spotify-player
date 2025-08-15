@@ -144,4 +144,5 @@ class SpotifyPlaybackClient:
         }
         if market:
             params["market"] = market
+        logging.info("DEBUG: Searching collections with params: %s", params)
         return self.requester._make_request("GET", "/search", params=params)

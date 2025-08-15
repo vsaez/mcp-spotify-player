@@ -137,4 +137,5 @@ obtener_token.md
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+.continue/
