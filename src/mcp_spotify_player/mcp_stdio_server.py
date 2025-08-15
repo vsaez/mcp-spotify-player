@@ -64,6 +64,7 @@ class MCPServer:
             "get_playback_state": self.controller.playback.get_playback_state,
             "get_devices": self.controller.playback.get_devices,
             "search_music": self.controller.playback.search_music,
+            "search_collections": self.controller.playback.search_collections,
             "get_playlists": self.controller.playlists.get_playlists,
             "get_playlist_tracks": self.controller.playlists.get_playlist_tracks,
             "rename_playlist": self.controller.playlists.rename_playlist,
@@ -80,6 +81,7 @@ class MCPServer:
             "set_volume": self._validate_set_volume,
             "set_repeat": self._validate_set_repeat,
             "search_music": self._validate_search_music,
+            "search_collections": self._validate_search_collections,
             "get_playlist_tracks": self._validate_get_playlist_tracks,
             "rename_playlist": self._validate_rename_playlist,
             "clear_playlist": self._validate_clear_playlist,
@@ -94,6 +96,7 @@ class MCPServer:
             "get_playback_state": self._format_get_playback_state,
             "get_devices": self._format_json_result,
             "search_music": self._format_json_result,
+            "search_collections": self._format_json_result,
             "get_playlists": self._format_json_result,
             "get_playlist_tracks": self._format_json_result,
             "queue_list": self._format_json_result,
@@ -242,6 +245,21 @@ class MCPServer:
     def _validate_search_music(self, arguments: Dict[str, Any]):
         if not arguments.get("query"):
             raise ValueError("query is required")
+
+    def _validate_search_collections(self, arguments: Dict[str, Any]):
+        if not arguments.get("q"):
+            raise ValueError("q is required")
+        collection_type = arguments.get("type")
+        if collection_type not in ("playlist", "album"):
+            raise ValueError("type must be 'playlist' or 'album'")
+        limit = arguments.get("limit", 20)
+        if not isinstance(limit, int) or limit < 1 or limit > 50:
+            raise ValueError("limit must be between 1 and 50")
+        offset = arguments.get("offset", 0)
+        if not isinstance(offset, int) or offset < 0:
+            raise ValueError("offset must be >= 0")
+        arguments.setdefault("limit", limit)
+        arguments.setdefault("offset", offset)
 
     def _validate_get_playlist_tracks(self, arguments: Dict[str, Any]):
         playlist_id = arguments.get("playlist_id")

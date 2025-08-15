@@ -118,12 +118,31 @@ Once authenticated, you can use these commands:
 - `get_playback_state` — "What's the playback state?"
 - `get_devices` — "List my available devices"
 - `search_music` — "Search for songs by Queen"
+- `search_collections` — "Search for playlists or albums"
 - `get_playlists` — "List my playlists"
 - `get_playlist_tracks` — "Show tracks in playlist 'Road Trip'"
 - `create_playlist` — "Create playlist 'Road Trip' with these songs..."
 - `rename_playlist` — "Rename playlist 'Road Trip' to 'Vacation'"
 - `clear_playlist` — "Remove all songs from playlist 'Road Trip'"
 - `add_tracks_to_playlist` — "Add these songs to playlist 'Road Trip'"
+
+### Search – Playlists & Albums
+
+Use the `search_collections` tool to find public playlists or albums.
+
+```bash
+/search_collections {"q": "study", "type": "playlist", "limit": 5}
+```
+
+Parameters:
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `q` | string | Search query (required) |
+| `type` | string | `playlist` or `album` (required) |
+| `limit` | integer | 1–50, default 20 |
+| `offset` | integer | ≥0, default 0 |
+| `market` | string | Optional ISO 3166-1 alpha-2 code |
 
 ### Required scopes
 

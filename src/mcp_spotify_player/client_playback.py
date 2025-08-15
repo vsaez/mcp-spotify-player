@@ -126,3 +126,22 @@ class SpotifyPlaybackClient:
     def search_artists(self, query: str, limit: int = 10) -> Optional[Dict[str, Any]]:
         """Search for artists on Spotify."""
         return self._search(query, 'artist', limit)
+
+    def search_collections(
+        self,
+        q: str,
+        type: str,
+        limit: int = 20,
+        offset: int = 0,
+        market: str | None = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Search for playlists or albums on Spotify."""
+        params = {
+            "q": q,
+            "type": type,
+            "limit": limit,
+            "offset": offset,
+        }
+        if market:
+            params["market"] = market
+        return self.requester._make_request("GET", "/search", params=params)
