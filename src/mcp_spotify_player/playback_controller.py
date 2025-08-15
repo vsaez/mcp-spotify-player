@@ -1,17 +1,10 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from mcp_spotify_player.client_playback import SpotifyPlaybackClient
 from mcp_spotify_player.mcp_models import TrackInfo
 from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = logging.getLogger(__name__)
-
-
-def queue_add(uri: str, device_id: str | None = None) -> dict:
-    playback = SpotifyPlaybackClient()
-    playback.add_to_queue(uri, device_id)
-    return {"status": "ok", "queued_uri": uri, "device_id": device_id}
 
 
 class PlaybackController:
@@ -23,11 +16,11 @@ class PlaybackController:
         self.playlists_client = client.playlists
 
     def play_music(
-        self,
-        query: Optional[str] = None,
-        playlist_name: Optional[str] = None,
-        track_uri: Optional[str] = None,
-        artist_uri: Optional[str] = None,
+            self,
+            query: Optional[str] = None,
+            playlist_name: Optional[str] = None,
+            track_uri: Optional[str] = None,
+            artist_uri: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Play music based on different parameters"""
 
@@ -245,6 +238,18 @@ class PlaybackController:
                 return {"success": False, "message": f"Search type '{search_type}' not supported"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
+
+    def queue_add(self, uri: str, device_id: str | None = None) -> dict:
+        """Add a track/episode to the active device queue."""
+        try:
+            self.playback_client.add_to_queue(uri, device_id)
+            return {"success": True, "message": f"Queued: {uri}", "uri": uri, "device_id": device_id}
+        except Exception as e:
+            return {"success": False, "message": f"Error queueing item: {e}"}
+
+    def queue_list(self, limit: int | None = None) -> dict:
+        """Thin wrapper to match MCP tool name → delegates to client.get_queue()."""
+        return self.playback_client.get_queue(limit=limit)
 
     def is_authenticated(self) -> bool:
         """Checks if the user is authenticated"""

@@ -75,6 +75,25 @@ class SpotifyPlaybackClient:
         if result is not True:
             raise RuntimeError("Failed to add item to queue")
 
+    def get_queue(self, limit: int | None = None) -> dict:
+        """Fetch current queue using shared requester (_make_request)."""
+        try:
+            # Use the shared requester; do NOT build URLs here.
+            data = self.requester._make_request("GET", "/me/player/queue")
+
+            queue = (data.get("queue") or [])
+            if limit is not None:
+                queue = queue[: int(limit)]
+
+            return {
+                "success": True,
+                "currently_playing": data.get("currently_playing"),
+                "queue": queue,
+            }
+        except Exception as e:
+            # Keep the server-wide error contract.
+            return {"success": False, "message": f"Error fetching queue: {e}"}
+
     def get_current_playing(self) -> Optional[Dict[str, Any]]:
         """Gets the information of the currently playing song"""
         return self.requester._make_request('GET', '/me/player/currently-playing', feature='playback')
