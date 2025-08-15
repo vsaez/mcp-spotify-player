@@ -60,6 +60,18 @@ MANIFEST = {
             }
         },
         {
+            "name": "queue_add",
+            "description": "Add a track/episode URI to the active device queue (optionally to a specific device).",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "uri": {"type": "string"},
+                    "device_id": {"type": "string"}
+                },
+                "required": ["uri"]
+            }
+        },
+        {
             "name": "set_volume",
             "description": "Set the playback volume (0-100%)",
             "inputSchema": {

@@ -64,6 +64,17 @@ class SpotifyPlaybackClient:
         logging.info(f"DEBUG: Setting repeat state to {state} with params {params} result: {result}")
         return result is not None
 
+    def add_to_queue(self, uri: str, device_id: str | None = None) -> None:
+        """Add a track or episode to the user's queue."""
+        params = {"uri": uri}
+        if device_id:
+            params["device_id"] = device_id
+        result = self.requester._make_request(
+            "POST", "/me/player/queue", feature="playback", params=params
+        )
+        if result is not True:
+            raise RuntimeError("Failed to add item to queue")
+
     def get_current_playing(self) -> Optional[Dict[str, Any]]:
         """Gets the information of the currently playing song"""
         return self.requester._make_request('GET', '/me/player/currently-playing', feature='playback')
