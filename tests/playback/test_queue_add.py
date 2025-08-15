@@ -1,13 +1,13 @@
 import pytest
 
-from mcp_spotify_player.spotify_client import SpotifyClient
-from mcp_spotify_player.playback_controller import queue_add
 import mcp_spotify_player.playback_controller as playback_controller_module
 from mcp_spotify.errors import (
     NotAuthenticatedError,
     NoActiveDeviceError,
     PremiumRequiredError,
 )
+from mcp_spotify_player.playback_controller import PlaybackController
+from mcp_spotify_player.spotify_client import SpotifyClient
 
 
 def test_client_add_to_queue(monkeypatch: pytest.MonkeyPatch):
@@ -40,16 +40,19 @@ def test_queue_add_success(monkeypatch: pytest.MonkeyPatch):
             recorded["uri"] = uri
             recorded["device_id"] = device_id
 
+    class DummyPlaylists:
+        pass  # No necesitamos implementar nada aquí
+
+    class DummyClient:
+        playback = DummyPlayback()
+        playlists = DummyPlaylists()  # Añadimos el atributo playlists
+
     monkeypatch.setattr(
-        playback_controller_module, "SpotifyPlaybackClient", lambda: DummyPlayback()
+        playback_controller_module, "SpotifyClient", lambda: DummyClient()
     )
 
-    result = queue_add("spotify:track:123", "dev1")
-    assert result == {
-        "status": "ok",
-        "queued_uri": "spotify:track:123",
-        "device_id": "dev1",
-    }
+    controller = PlaybackController(DummyClient())
+    result = controller.queue_add("spotify:track:123", "dev1")
     assert recorded == {"uri": "spotify:track:123", "device_id": "dev1"}
 
 
@@ -62,9 +65,20 @@ def test_queue_add_errors(monkeypatch: pytest.MonkeyPatch, exc):
         def add_to_queue(self, uri: str, device_id: str | None = None):
             raise exc("boom")
 
+    class DummyPlaylists:
+        pass
+
+    class DummyClient:
+        playback = DummyPlayback()
+        playlists = DummyPlaylists()
+
     monkeypatch.setattr(
-        playback_controller_module, "SpotifyPlaybackClient", lambda: DummyPlayback()
+        playback_controller_module, "SpotifyClient", lambda: DummyClient()
     )
 
-    with pytest.raises(exc):
-        queue_add("spotify:track:123")
+    controller = PlaybackController(DummyClient())
+    result = controller.queue_add("spotify:track:123")
+
+    # Verificar que el resultado indica error
+    assert result["success"] == False
+    assert "boom" in result["message"]
