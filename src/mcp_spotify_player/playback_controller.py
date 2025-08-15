@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from mcp_spotify_player.client_playback import SpotifyPlaybackClient
 from mcp_spotify_player.mcp_models import TrackInfo
 from mcp_spotify_player.spotify_client import SpotifyClient
 
