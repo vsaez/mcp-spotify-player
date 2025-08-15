@@ -75,6 +75,15 @@ class SpotifyPlaybackClient:
         if result is not True:
             raise RuntimeError("Failed to add item to queue")
 
+    def get_queue(self) -> dict:
+        """
+        GET /me/player/queue
+        Returns the raw JSON with keys 'currently_playing' and 'queue'.
+        """
+        return self.requester._make_request(
+            "GET", "/me/player/queue", feature="playback"
+        )
+
     def get_current_playing(self) -> Optional[Dict[str, Any]]:
         """Gets the information of the currently playing song"""
         return self.requester._make_request('GET', '/me/player/currently-playing', feature='playback')

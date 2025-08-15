@@ -14,6 +14,20 @@ def queue_add(uri: str, device_id: str | None = None) -> dict:
     return {"status": "ok", "queued_uri": uri, "device_id": device_id}
 
 
+def queue_list(limit: int | None = None) -> dict:
+    playback = SpotifyPlaybackClient()
+    data = playback.get_queue()  # dict with 'currently_playing', 'queue'
+    q = data.get("queue", []) if isinstance(data, dict) else []
+    if limit is not None:
+        q = q[:max(0, int(limit))]
+    return {
+        "now_playing": data.get("currently_playing"),
+        "queue": q,
+        "count": len(q),
+        "note": "Queue may be truncated by Spotify API.",
+    }
+
+
 class PlaybackController:
     """Controller for playback-related operations using SpotifyClient."""
 

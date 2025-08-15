@@ -72,6 +72,16 @@ MANIFEST = {
             }
         },
         {
+            "name": "queue_list",
+            "description": "Get the current playing item and the upcoming queue (may be truncated by Spotify).",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "limit": {"type": "integer", "minimum": 1}
+                }
+            }
+        },
+        {
             "name": "set_volume",
             "description": "Set the playback volume (0-100%)",
             "inputSchema": {
