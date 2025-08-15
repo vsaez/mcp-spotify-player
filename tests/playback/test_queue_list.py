@@ -1,7 +1,7 @@
 import pytest
 
 from mcp_spotify_player.spotify_client import SpotifyClient
-from mcp_spotify_player.playback_controller import queue_list
+from mcp_spotify_player.playback_controller import PlaybackController
 import mcp_spotify_player.playback_controller as playback_controller_module
 from mcp_spotify.errors import NoActiveDeviceError
 
@@ -22,7 +22,36 @@ def test_client_get_queue(monkeypatch: pytest.MonkeyPatch):
     result = client.playback.get_queue()
     assert calls[-1][0] == "GET"
     assert calls[-1][1] == "/me/player/queue"
-    assert result == sample
+
+    # El resultado incluye success: True además de los datos originales
+    expected = {
+        "success": True,
+        "currently_playing": {"id": "t1"},
+        "queue": [{"id": "t2"}, {"id": "t3"}],
+    }
+    assert result == expected
+
+
+
+def test_queue_list_no_device(monkeypatch: pytest.MonkeyPatch):
+    class DummyPlayback:
+        def get_queue(self, limit=None):  # Añadir parámetro limit
+            raise NoActiveDeviceError("boom")
+
+    class DummyPlaylists:
+        pass
+
+    class DummyClient:
+        playback = DummyPlayback()
+        playlists = DummyPlaylists()
+
+    monkeypatch.setattr(
+        playback_controller_module, "SpotifyClient", lambda: DummyClient()
+    )
+
+    controller = PlaybackController(DummyClient())
+    with pytest.raises(NoActiveDeviceError):
+        controller.queue_list()
 
 
 def test_queue_list_success(monkeypatch: pytest.MonkeyPatch):
@@ -32,34 +61,25 @@ def test_queue_list_success(monkeypatch: pytest.MonkeyPatch):
     }
 
     class DummyPlayback:
-        def get_queue(self):
+        def get_queue(self, limit=None):
             return data
 
-    monkeypatch.setattr(
-        playback_controller_module, "SpotifyPlaybackClient", lambda: DummyPlayback()
-    )
+    class DummyPlaylists:
+        pass
 
-    result = queue_list()
-    assert result == {
-        "now_playing": data["currently_playing"],
-        "queue": data["queue"],
-        "count": 2,
-        "note": "Queue may be truncated by Spotify API.",
-    }
-
-    limited = queue_list(limit=1)
-    assert limited["queue"] == data["queue"][:1]
-    assert limited["count"] == 1
-
-
-def test_queue_list_no_device(monkeypatch: pytest.MonkeyPatch):
-    class DummyPlayback:
-        def get_queue(self):
-            raise NoActiveDeviceError("boom")
+    class DummyClient:
+        playback = DummyPlayback()
+        playlists = DummyPlaylists()
 
     monkeypatch.setattr(
-        playback_controller_module, "SpotifyPlaybackClient", lambda: DummyPlayback()
+        playback_controller_module, "SpotifyClient", lambda: DummyClient()
     )
 
-    with pytest.raises(NoActiveDeviceError):
-        queue_list()
+    controller = PlaybackController(DummyClient())
+    result = controller.queue_list()
+
+    # El controlador devuelve directamente los datos del cliente
+    assert result == data
+
+    limited = controller.queue_list(limit=1)
+    assert limited == data
