@@ -72,6 +72,7 @@ class MCPServer:
             "add_tracks_to_playlist": self.controller.playlists.add_tracks_to_playlist,
             "diagnose": self._diagnose,
             "queue_add": self.controller.playback.queue_add,
+            "queue_list": self.controller.playback.queue_list,
         }
 
         # Optional validators and result formatters
@@ -85,6 +86,7 @@ class MCPServer:
             "create_playlist": self._validate_create_playlist,
             "add_tracks_to_playlist": self._validate_add_tracks_to_playlist,
             "queue_add": self._validate_queue_add,
+            "queue_list": self._validate_queue_list,
         }
 
         self.RESULT_FORMATTERS = {
@@ -94,6 +96,7 @@ class MCPServer:
             "search_music": self._format_json_result,
             "get_playlists": self._format_json_result,
             "get_playlist_tracks": self._format_json_result,
+            "queue_list": self._format_json_result,
         }
 
     def send_response(self, response: Dict[str, Any]):
@@ -122,7 +125,8 @@ class MCPServer:
             "jsonrpc": "2.0",
             "id": request_id,
             "result": {
-                "protocolVersion": "2025-06-18",
+                #"protocolVersion": "2025-06-18",
+                "protocolVersion": "2025-03-26",
                 "capabilities": {"tools": {}},
                 "serverInfo": {"name": "spotify-player", "version": "1.0.0"},
             },
@@ -273,6 +277,20 @@ class MCPServer:
             raise ValueError("'uri' is required")
         # device_id is optional, no check needed
 
+    def _validate_queue_list(self, arguments: Dict[str, Any]) -> None:
+        # We only accept 'limit' (optional, integer >= 1)
+        allowed = {"limit"}
+        for k in arguments.keys():
+            if k not in allowed:
+                raise ValueError("queue_list only accepts 'limit'")
+        if "limit" in arguments:
+            try:
+                limit = int(arguments["limit"])
+            except Exception:
+                raise ValueError("limit must be an integer")
+            if limit < 1:
+                raise ValueError("limit must be >= 1")
+
     # -----------------------
     # Result formatters
     # -----------------------
@@ -369,6 +387,8 @@ class MCPServer:
             logger.info("Server stopped by the user")
         except Exception as e:
             logger.error(f"Server error: {e}")
+
+
 
 
 if __name__ == "__main__":

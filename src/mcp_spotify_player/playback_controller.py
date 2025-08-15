@@ -7,6 +7,7 @@ from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = logging.getLogger(__name__)
 
+
 class PlaybackController:
     """Controller for playback-related operations using SpotifyClient."""
 
@@ -16,11 +17,11 @@ class PlaybackController:
         self.playlists_client = client.playlists
 
     def play_music(
-        self,
-        query: Optional[str] = None,
-        playlist_name: Optional[str] = None,
-        track_uri: Optional[str] = None,
-        artist_uri: Optional[str] = None,
+            self,
+            query: Optional[str] = None,
+            playlist_name: Optional[str] = None,
+            track_uri: Optional[str] = None,
+            artist_uri: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Play music based on different parameters"""
 
@@ -247,18 +248,46 @@ class PlaybackController:
         except Exception as e:
             return {"success": False, "message": f"Error queueing item: {e}"}
 
-    def queue_list(limit: int | None = None) -> dict:
-        playback = SpotifyPlaybackClient()
-        data = playback.get_queue()  # dict with 'currently_playing', 'queue'
-        q = data.get("queue", []) if isinstance(data, dict) else []
-        if limit is not None:
-            q = q[:max(0, int(limit))]
-        return {
-            "now_playing": data.get("currently_playing"),
-            "queue": q,
-            "count": len(q),
-            "note": "Queue may be truncated by Spotify API.",
-        }
+    def queue_list(self, limit: int | None = None) -> dict:
+        """
+        Returns 'currently_playing' and the 'queue'.
+        Note: Spotify may return a truncated queue; we reflect the received size.
+        """
+        try:
+            data = self.playback_client.get_queue() or {}
+            queue = list(data.get("queue") or [])
+            if limit is not None:
+                limit_int = int(limit)
+                if limit_int < 1:
+                    return {"success": False, "message": "limit must be >= 1"}
+                queue = queue[:limit_int]
+
+            def _compact(t: dict | None):
+                if not isinstance(t, dict):
+                    return None
+                artists = [a.get("name") for a in (t.get("artists") or []) if isinstance(a, dict)]
+                return {
+                    "type": t.get("type"),
+                    "id": t.get("id"),
+                    "uri": t.get("uri"),
+                    "name": t.get("name"),
+                    "artists": artists,
+                    "duration_ms": t.get("duration_ms"),
+                    "explicit": t.get("explicit"),
+                    "is_playable": t.get("is_playable"),
+                    "external_url": (t.get("external_urls") or {}).get("spotify"),
+                }
+
+            return {
+                "success": True,
+                "message": f"Queue items received: {len(queue)}",
+                "currently_playing": _compact(data.get("currently_playing")),
+                "queue": [_compact(t) for t in queue],
+                "received_count": len(queue),
+                "note": "The Spotify API may return a truncated queue; counts reflect received items only.",
+            }
+        except Exception as e:
+            return {"success": False, "message": f"Error fetching queue: {e}"}
 
     def is_authenticated(self) -> bool:
         """Checks if the user is authenticated"""

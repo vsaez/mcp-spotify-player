@@ -78,11 +78,17 @@ class SpotifyPlaybackClient:
     def get_queue(self) -> dict:
         """
         GET /me/player/queue
-        Returns the raw JSON with keys 'currently_playing' and 'queue'.
+        Devuelve: {"currently_playing": {...} | None, "queue": [ ... ] }
+        Requiere scopes de lectura de playback (p. ej. user-read-playback-state y/o user-read-currently-playing).
         """
-        return self.requester._make_request(
-            "GET", "/me/player/queue", feature="playback"
-        )
+        url = f"{self.base_url}/me/player/queue"
+        res = self.session.get(url, headers=self._auth_headers(), timeout=10)
+        res.raise_for_status()
+        data = res.json() if res.content else {}
+        return {
+            "currently_playing": data.get("currently_playing"),
+            "queue": data.get("queue", []),
+        }
 
     def get_current_playing(self) -> Optional[Dict[str, Any]]:
         """Gets the information of the currently playing song"""
