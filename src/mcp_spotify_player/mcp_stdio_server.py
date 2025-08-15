@@ -71,6 +71,7 @@ class MCPServer:
             "create_playlist": self.controller.playlists.create_playlist,
             "add_tracks_to_playlist": self.controller.playlists.add_tracks_to_playlist,
             "diagnose": self._diagnose,
+            "queue_add": self.controller.playback.queue_add,
         }
 
         # Optional validators and result formatters
@@ -83,6 +84,7 @@ class MCPServer:
             "clear_playlist": self._validate_clear_playlist,
             "create_playlist": self._validate_create_playlist,
             "add_tracks_to_playlist": self._validate_add_tracks_to_playlist,
+            "queue_add": self._validate_queue_add,
         }
 
         self.RESULT_FORMATTERS = {
@@ -264,6 +266,12 @@ class MCPServer:
     def _validate_add_tracks_to_playlist(self, arguments: Dict[str, Any]):
         if not arguments.get("playlist_id") or not arguments.get("track_uris"):
             raise ValueError("playlist_id and track_uris are required")
+
+    def _validate_queue_add(self, args: dict) -> None:
+        """Validate input for the queue_add tool."""
+        if not args.get("uri"):
+            raise ValueError("'uri' is required")
+        # device_id is optional, no check needed
 
     # -----------------------
     # Result formatters

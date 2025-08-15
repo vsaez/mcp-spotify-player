@@ -7,27 +7,6 @@ from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = logging.getLogger(__name__)
 
-
-def queue_add(uri: str, device_id: str | None = None) -> dict:
-    playback = SpotifyPlaybackClient()
-    playback.add_to_queue(uri, device_id)
-    return {"status": "ok", "queued_uri": uri, "device_id": device_id}
-
-
-def queue_list(limit: int | None = None) -> dict:
-    playback = SpotifyPlaybackClient()
-    data = playback.get_queue()  # dict with 'currently_playing', 'queue'
-    q = data.get("queue", []) if isinstance(data, dict) else []
-    if limit is not None:
-        q = q[:max(0, int(limit))]
-    return {
-        "now_playing": data.get("currently_playing"),
-        "queue": q,
-        "count": len(q),
-        "note": "Queue may be truncated by Spotify API.",
-    }
-
-
 class PlaybackController:
     """Controller for playback-related operations using SpotifyClient."""
 
@@ -259,6 +238,27 @@ class PlaybackController:
                 return {"success": False, "message": f"Search type '{search_type}' not supported"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
+
+    def queue_add(self, uri: str, device_id: str | None = None) -> dict:
+        """Add a track/episode to the active device queue."""
+        try:
+            self.playback_client.add_to_queue(uri, device_id)
+            return {"success": True, "message": f"Queued: {uri}", "uri": uri, "device_id": device_id}
+        except Exception as e:
+            return {"success": False, "message": f"Error queueing item: {e}"}
+
+    def queue_list(limit: int | None = None) -> dict:
+        playback = SpotifyPlaybackClient()
+        data = playback.get_queue()  # dict with 'currently_playing', 'queue'
+        q = data.get("queue", []) if isinstance(data, dict) else []
+        if limit is not None:
+            q = q[:max(0, int(limit))]
+        return {
+            "now_playing": data.get("currently_playing"),
+            "queue": q,
+            "count": len(q),
+            "note": "Queue may be truncated by Spotify API.",
+        }
 
     def is_authenticated(self) -> bool:
         """Checks if the user is authenticated"""
