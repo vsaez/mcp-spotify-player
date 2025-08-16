@@ -244,6 +244,20 @@ MANIFEST = {
             }
         },
         {
+            "name": "get_artist",
+            "description": "Retrieve artist information by its ID",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "artist_id": {
+                        "type": "string",
+                        "description": "Spotify artist ID",
+                    }
+                },
+                "required": ["artist_id"],
+            },
+        },
+        {
             "name": "get_album",
             "description": "Retrieve album information by its ID",
             "inputSchema": {

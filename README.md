@@ -13,6 +13,7 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 - **Music search**: Search for songs, artists, and albums
 - **Collection search**: Find public playlists or albums
 - **Album browsing**: View album details and track lists
+- **Artist info**: View artist details by ID
 - **Saved albums**: List albums saved in your library
 - **Check saved albums**: Verify if albums are in your library
 - **Save albums**: Add albums to your library
@@ -105,6 +106,7 @@ After authenticating with Spotify, you can use these commands in your MCP client
 - `search_collections` — "Search for playlists or albums"
 - `get_playlists` — "List my playlists"
 - `get_playlist_tracks` — "Show tracks in playlist 'Road Trip'"
+- `get_artist` — "Show info about artist with a given ID"
 - `get_album` — "Show info about album 'The Dark Side of the Moon'"
 - `get_albums` — "Show info about multiple albums"
 - `get_album_tracks` — "Show tracks in album 'The Dark Side of the Moon'"
@@ -160,12 +162,14 @@ mcp-spotify-player/
 │       ├── client_auth.py
 │       ├── client_playback.py
 │       ├── client_playlists.py
+│       ├── client_artists.py
 │       ├── config.py
 │       ├── mcp_manifest.py
 │       ├── mcp_models.py
 │       ├── mcp_stdio_server.py
 │       ├── playback_controller.py
 │       ├── playlist_controller.py
+│       ├── artists_controller.py
 │       ├── spotify_client.py
 │       └── spotify_controller.py
 ├── pyproject.toml
