@@ -67,7 +67,7 @@ SPOTIFY_REDIRECT_URI=http://localhost:8000/auth/callback
 
 1. **Install dependencies**: `pip install -r requirements.txt`
 2. **Configure credentials**: Edit `.env` with your Spotify details
-3. **Start server**: `python start_mcp_server.py`
+3. **Start server**: `mcp-spotify-player`
 
 ## 🎵 Example Usage with Claude
 

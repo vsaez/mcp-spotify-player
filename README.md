@@ -51,10 +51,10 @@ pip install -e .
 3. **Set up environment variables**:
 
 ```bash
-cp env.example env
+cp env.example .env
 ```
 
-Edit the `env` file with your Spotify credentials:
+Edit the `.env` file with your Spotify credentials:
 
 ```env
    SPOTIFY_CLIENT_ID=your_client_id_here
@@ -207,7 +207,7 @@ McpError: MCP error -32001: Request timed out
 If you see "Not authenticated with Spotify":
 
 1. Run the `/auth` command in your MCP client
-2. Verify that the credentials in `env` are correct
+2. Verify that the credentials in `.env` are correct
 
 ### Browser not responding
 
