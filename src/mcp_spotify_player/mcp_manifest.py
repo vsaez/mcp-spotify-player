@@ -260,6 +260,21 @@ MANIFEST = {
             }
         },
         {
+            "name": "get_albums",
+            "description": "Retrieve information for multiple albums by their IDs",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "album_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of Spotify album IDs"
+                    }
+                },
+                "required": ["album_ids"]
+            }
+        },
+        {
             "name": "rename_playlist",
             "description": "Rename a Spotify playlist by its ID to a new name",
             "inputSchema": {
