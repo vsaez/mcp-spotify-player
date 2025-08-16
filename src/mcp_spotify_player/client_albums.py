@@ -48,3 +48,18 @@ class SpotifyAlbumsClient:
             "Response getting tracks for album id %s: %s", album_id, result
         )
         return result
+
+    def get_saved_albums(self, limit: int = 20) -> Optional[Dict[str, Any]]:
+        """Retrieve albums saved in the user's library."""
+        params = {"limit": limit}
+        logger.info(
+            "spotify_client -- Getting user saved albums with limit %s", limit
+        )
+        result = self.requester._make_request(
+            "GET",
+            "/me/albums",
+            feature="albums",
+            params=params,
+        )
+        logger.debug("Response getting user saved albums: %s", result)
+        return result

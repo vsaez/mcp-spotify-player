@@ -295,6 +295,21 @@ MANIFEST = {
             }
         },
         {
+            "name": "get_saved_albums",
+            "description": "Retrieve the user's saved albums",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 50,
+                        "default": 20
+                    }
+                }
+            }
+        },
+        {
             "name": "rename_playlist",
             "description": "Rename a Spotify playlist by its ID to a new name",
             "inputSchema": {

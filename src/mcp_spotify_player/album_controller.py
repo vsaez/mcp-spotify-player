@@ -95,6 +95,35 @@ class AlbumController:
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    def get_saved_albums(self, limit: int = 20) -> Dict[str, Any]:
+        """Retrieve albums saved in the user's library."""
+        try:
+            saved = self.albums_client.get_saved_albums(limit)
+            if saved and saved.get("items"):
+                albums = []
+                for item in saved.get("items", []):
+                    album = item.get("album")
+                    if not album:
+                        continue
+                    album_info = AlbumInfo(
+                        id=album.get("id", ""),
+                        name=album.get("name", ""),
+                        artists=[artist.get("name", "") for artist in album.get("artists", [])],
+                        release_date=album.get("release_date"),
+                        total_tracks=album.get("total_tracks", 0),
+                        uri=album.get("uri", ""),
+                    )
+                    albums.append(album_info.dict())
+
+                return {
+                    "success": True,
+                    "albums": albums,
+                    "total_albums": saved.get("total", 0),
+                }
+            return {"success": False, "message": "Could not get saved albums"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
     def _validate_spotify_id(self, id_string: str) -> bool:
         """Validates if the string is a valid Spotify ID"""
         return bool(id_string) and len(id_string) > 10 and id_string.isalnum()

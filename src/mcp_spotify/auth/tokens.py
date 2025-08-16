@@ -37,6 +37,9 @@ REQUIRED_SCOPES: dict[str, set[str]] = {
         "playlist-read-collaborative",
         "playlist-modify-private",
     },
+    "albums": {
+        "user-library-read",
+    },
 }
 
 
