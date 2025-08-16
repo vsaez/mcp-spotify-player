@@ -67,6 +67,7 @@ class MCPServer:
             "search_collections": self.controller.playback.search_collections,
             "get_playlists": self.controller.playlists.get_playlists,
             "get_playlist_tracks": self.controller.playlists.get_playlist_tracks,
+            "get_album": self.controller.albums.get_album,
             "rename_playlist": self.controller.playlists.rename_playlist,
             "clear_playlist": self.controller.playlists.clear_playlist,
             "create_playlist": self.controller.playlists.create_playlist,
@@ -83,6 +84,7 @@ class MCPServer:
             "search_music": self._validate_search_music,
             "search_collections": self._validate_search_collections,
             "get_playlist_tracks": self._validate_get_playlist_tracks,
+            "get_album": self._validate_get_album,
             "rename_playlist": self._validate_rename_playlist,
             "clear_playlist": self._validate_clear_playlist,
             "create_playlist": self._validate_create_playlist,
@@ -99,6 +101,7 @@ class MCPServer:
             "search_collections": self._format_json_result,
             "get_playlists": self._format_json_result,
             "get_playlist_tracks": self._format_json_result,
+            "get_album": self._format_json_result,
             "queue_list": self._format_json_result,
         }
 
@@ -277,6 +280,15 @@ class MCPServer:
     def _validate_rename_playlist(self, arguments: Dict[str, Any]):
         if not arguments.get("playlist_id"):
             raise ValueError("playlist_id is required")
+
+    def _validate_get_album(self, arguments: Dict[str, Any]):
+        album_id = arguments.get("album_id")
+        if not album_id:
+            raise ValueError("album_id is required")
+        if album_id.isdigit() and len(album_id) < 10:
+            raise ValueError(
+                "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
+            )
 
     def _validate_clear_playlist(self, arguments: Dict[str, Any]):
         if not arguments.get("playlist_id"):

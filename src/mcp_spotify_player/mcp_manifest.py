@@ -244,6 +244,22 @@ MANIFEST = {
             }
         },
         {
+            "name": "get_album",
+            "description": "Retrieve album information by its ID",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "album_id": {
+                        "type": "string",
+                        "description": "Spotify album ID"
+                    }
+                },
+                "required": [
+                    "album_id"
+                ]
+            }
+        },
+        {
             "name": "rename_playlist",
             "description": "Rename a Spotify playlist by its ID to a new name",
             "inputSchema": {

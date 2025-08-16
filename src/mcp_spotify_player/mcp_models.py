@@ -86,6 +86,16 @@ class PlaylistInfo(BaseModel):
             return v.get('id', 'unknown')
         return v
 
+
+class AlbumInfo(BaseModel):
+    """Album information"""
+    id: str
+    name: str
+    artists: List[str]
+    release_date: Optional[str] = None
+    total_tracks: int
+    uri: str
+
 # Models for MCP manifest
 class MCPTool(BaseModel):
     """MCP tool"""

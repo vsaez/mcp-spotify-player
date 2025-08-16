@@ -16,6 +16,7 @@ from mcp_spotify.errors import (
 )
 from mcp_spotify_player.client_playback import SpotifyPlaybackClient
 from mcp_spotify_player.client_playlists import SpotifyPlaylistsClient
+from mcp_spotify_player.client_albums import SpotifyAlbumsClient
 from mcp_spotify_player.config import Config
 
 
@@ -36,6 +37,7 @@ class SpotifyClient:
         self.config = Config()
         self.playback = SpotifyPlaybackClient(self)
         self.playlists = SpotifyPlaylistsClient(self)
+        self.albums = SpotifyAlbumsClient(self)
         self.verify_scopes = verify_scopes
         if verify_at_startup:
             tokens = self.tokens_provider()
@@ -113,7 +115,7 @@ class SpotifyClient:
         return data
 
     def __getattr__(self, name):
-        for client in (self.playback, self.playlists):
+        for client in (self.playback, self.playlists, self.albums):
             if hasattr(client, name):
                 return getattr(client, name)
         raise AttributeError(f"{self.__class__.__name__} object has no attribute {name}")
