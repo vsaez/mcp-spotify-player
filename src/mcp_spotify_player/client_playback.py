@@ -1,6 +1,8 @@
-import logging
-import sys
 from typing import Any, Dict, List, Optional
+
+from mcp_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class SpotifyPlaybackClient:
@@ -20,11 +22,11 @@ class SpotifyPlaybackClient:
         result = self.requester._make_request(
             'PUT', '/me/player/play', feature='playback', json=data
         )
-        sys.stderr.write(f"DEBUG: Received response: {result}\n")
+        logger.debug("Received response: %s", result)
         if result is not None:
             return result
         else:
-            sys.stderr.write(f"DEBUG: Error initializing playback: {result}\n")
+            logger.debug("Error initializing playback: %s", result)
             return {"error": "Playback failed. Please check that you have an active device on Spotify."}
 
     def pause(self) -> bool:
@@ -61,7 +63,7 @@ class SpotifyPlaybackClient:
         result = self.requester._make_request(
             'PUT', '/me/player/repeat', feature='playback', params=params
         )
-        logging.info(f"DEBUG: Setting repeat state to {state} with params {params} result: {result}")
+        logger.debug("Setting repeat state to %s with params %s result: %s", state, params, result)
         return result is not None
 
     def add_to_queue(self, uri: str, device_id: str | None = None) -> None:
@@ -167,7 +169,7 @@ class SpotifyPlaybackClient:
     #     }
     #     if market:
     #         params["market"] = market
-    #     logging.info("DEBUG: Searching collections with params: %s", params)
+    #     logger.debug("Searching collections with params: %s", params)
     #     return self.requester._make_request('GET', '/search', params=params)
 
 

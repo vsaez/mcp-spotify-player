@@ -1,7 +1,5 @@
 import json
-import logging
 import os
-import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -10,10 +8,9 @@ import requests
 
 from mcp_spotify.auth.tokens import Tokens, load_tokens, needs_refresh
 from mcp_spotify_player.config import Config, resolve_tokens_path
+from mcp_logging import get_logger
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def try_load_tokens() -> Optional[Tokens]:
@@ -147,16 +144,16 @@ class SpotifyAuthClient:
         """Make a request to the Spotify API"""
         token = self._get_valid_token()
         if not token:
-            sys.stderr.write(f"INFO: Could not obtain valid token for {endpoint}\n")
+            logger.info("Could not obtain valid token for %s", endpoint)
             return None
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         url = f"{self.config.SPOTIFY_API_BASE}{endpoint}"
         params_str = ""
         if "params" in kwargs:
             params_str = f" with params : {kwargs['params']}"
-        sys.stderr.write(f"DEBUG: Making request {method} to {endpoint}{params_str}\n")
+        logger.debug("Making request %s to %s%s", method, endpoint, params_str)
         response = requests.request(method, url, headers=headers, **kwargs)
-        sys.stderr.write(f"DEBUG: Response {response.status_code} for {endpoint}\n")
+        logger.debug("Response %s for %s", response.status_code, endpoint)
         if response.status_code in [200, 201, 204]:
             if method == "PUT" and endpoint == "/me/player/repeat":
                 return True
@@ -165,14 +162,14 @@ class SpotifyAuthClient:
             except ValueError:
                 return True
         else:
-            sys.stderr.write(
-                f"DEBUG: Error {response.status_code} for {endpoint}: {response.text}\n"
+            logger.debug(
+                "Error %s for %s: %s", response.status_code, endpoint, response.text
             )
             try:
-                sys.stderr.write(
-                    f"DEBUG: Trying to parse JSON response for  {endpoint}\n. Response: {response.json()}\n"
+                logger.debug(
+                    "Trying to parse JSON response for %s. Response: %s", endpoint, response.json()
                 )
                 return response.json()
             except Exception:
-                sys.stderr.write(f"DEBUG: Error for {endpoint}: {response}\n")
+                logger.debug("Error for %s: %s", endpoint, response)
                 return {"error": response.text}

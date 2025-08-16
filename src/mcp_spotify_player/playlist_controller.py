@@ -1,10 +1,11 @@
-import logging
 from typing import Any, Dict, List
+
+from mcp_logging import get_logger
 
 from mcp_spotify_player.mcp_models import PlaylistInfo, TrackInfo
 from mcp_spotify_player.spotify_client import SpotifyClient
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class PlaylistController:
