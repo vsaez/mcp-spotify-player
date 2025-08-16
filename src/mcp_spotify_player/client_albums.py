@@ -63,3 +63,18 @@ class SpotifyAlbumsClient:
         )
         logger.debug("Response getting user saved albums: %s", result)
         return result
+
+    def save_albums(self, album_ids: List[str]) -> bool:
+        """Save one or more albums to the user's library."""
+        ids_param = ",".join(album_ids)
+        logger.info(
+            "spotify_client -- Saving albums with ids %s", ids_param
+        )
+        result = self.requester._make_request(
+            "PUT",
+            "/me/albums",
+            feature="albums",
+            json={"ids": album_ids},
+        )
+        logger.debug("Response saving albums %s: %s", ids_param, result)
+        return result is not None

@@ -71,6 +71,7 @@ class MCPServer:
             "get_albums": self.controller.albums.get_albums,
             "get_album_tracks": self.controller.albums.get_album_tracks,
             "get_saved_albums": self.controller.albums.get_saved_albums,
+            "save_albums": self.controller.albums.save_albums,
             "rename_playlist": self.controller.playlists.rename_playlist,
             "clear_playlist": self.controller.playlists.clear_playlist,
             "create_playlist": self.controller.playlists.create_playlist,
@@ -91,6 +92,7 @@ class MCPServer:
             "get_albums": self._validate_get_albums,
             "get_album_tracks": self._validate_get_album_tracks,
             "get_saved_albums": self._validate_get_saved_albums,
+            "save_albums": self._validate_save_albums,
             "rename_playlist": self._validate_rename_playlist,
             "clear_playlist": self._validate_clear_playlist,
             "create_playlist": self._validate_create_playlist,
@@ -111,6 +113,7 @@ class MCPServer:
             "get_albums": self._format_json_result,
             "get_album_tracks": self._format_json_result,
             "get_saved_albums": self._format_json_result,
+            "save_albums": self._format_json_result,
             "queue_list": self._format_json_result,
         }
 
@@ -328,6 +331,16 @@ class MCPServer:
                 raise ValueError("limit must be between 1 and 50")
         else:
             arguments["limit"] = 20
+
+    def _validate_save_albums(self, arguments: Dict[str, Any]):
+        album_ids = arguments.get("album_ids")
+        if not album_ids or not isinstance(album_ids, list):
+            raise ValueError("album_ids is required")
+        for album_id in album_ids:
+            if album_id.isdigit() and len(album_id) < 10:
+                raise ValueError(
+                    "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
+                )
 
     def _validate_clear_playlist(self, arguments: Dict[str, Any]):
         if not arguments.get("playlist_id"):
