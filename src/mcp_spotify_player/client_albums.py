@@ -64,6 +64,23 @@ class SpotifyAlbumsClient:
         logger.debug("Response getting user saved albums: %s", result)
         return result
 
+    def check_saved_albums(self, album_ids: List[str]) -> Optional[List[bool]]:
+        """Check if the specified albums are saved in the user's library."""
+        ids_param = ",".join(album_ids)
+        logger.info(
+            "spotify_client -- Checking if albums are saved with ids %s", ids_param
+        )
+        result = self.requester._make_request(
+            "GET",
+            "/me/albums/contains",
+            feature="albums",
+            params={"ids": ids_param},
+        )
+        logger.debug(
+            "Response checking if albums %s are saved: %s", ids_param, result
+        )
+        return result
+
     def save_albums(self, album_ids: List[str]) -> bool:
         """Save one or more albums to the user's library."""
         ids_param = ",".join(album_ids)

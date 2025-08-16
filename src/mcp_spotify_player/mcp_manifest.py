@@ -310,6 +310,21 @@ MANIFEST = {
             }
         },
         {
+            "name": "check_saved_albums",
+            "description": "Check if the specified albums are saved in the user's library",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "album_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of Spotify album IDs"
+                    }
+                },
+                "required": ["album_ids"]
+            }
+        },
+        {
             "name": "save_albums",
             "description": "Save one or more albums to the user's library",
             "inputSchema": {
