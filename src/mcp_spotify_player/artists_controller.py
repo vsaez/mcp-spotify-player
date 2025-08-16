@@ -1,7 +1,7 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from mcp_logging import get_logger
-from mcp_spotify_player.mcp_models import ArtistInfo
+from mcp_spotify_player.mcp_models import AlbumInfo, ArtistInfo
 from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = get_logger(__name__)
@@ -37,6 +37,53 @@ class ArtistsController:
             return {"success": False, "message": "Could not get artist"}
         except Exception as e:
             logger.error("Error retrieving artist %s: %s", artist_id, e)
+            return {"success": False, "message": f"Error: {str(e)}"}
+
+    def get_artist_albums(
+        self,
+        artist_id: str,
+        limit: int = 20,
+        include_groups: str | None = None,
+    ) -> Dict[str, Any]:
+        """Retrieve albums for a specific artist."""
+        logger.info(
+            "artists_controller -- Getting albums for artist id %s", artist_id
+        )
+        try:
+            if not self._validate_spotify_id(artist_id):
+                return {
+                    "success": False,
+                    "message": "Invalid artist ID. It must be a valid Spotify ID.",
+                }
+            albums_data = self.artists_client.get_artist_albums(
+                artist_id, include_groups=include_groups, limit=limit
+            )
+            if albums_data and albums_data.get("items"):
+                albums: List[Dict[str, Any]] = []
+                for album in albums_data.get("items", []):
+                    album_info = AlbumInfo(
+                        id=album.get("id", ""),
+                        name=album.get("name", ""),
+                        artists=[
+                            artist.get("name", "")
+                            for artist in album.get("artists", [])
+                        ],
+                        release_date=album.get("release_date"),
+                        total_tracks=album.get("total_tracks", 0),
+                        uri=album.get("uri", ""),
+                    )
+                    albums.append(album_info.dict())
+
+                return {
+                    "success": True,
+                    "albums": albums,
+                    "total_albums": albums_data.get("total", 0),
+                }
+            return {"success": False, "message": "Could not get artist albums"}
+        except Exception as e:
+            logger.error(
+                "Error retrieving albums for artist %s: %s", artist_id, e
+            )
             return {"success": False, "message": f"Error: {str(e)}"}
 
     def _validate_spotify_id(self, id_string: str) -> bool:

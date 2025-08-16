@@ -18,3 +18,25 @@ class SpotifyArtistsClient:
         result = self.requester._make_request("GET", f"/artists/{artist_id}")
         logger.debug("Response getting artist by id %s: %s", artist_id, result)
         return result
+
+    def get_artist_albums(
+        self,
+        artist_id: str,
+        *,
+        include_groups: Optional[str] = None,
+        limit: int = 20,
+    ) -> Optional[Dict[str, Any]]:
+        """Retrieve albums of a specific artist."""
+        logger.info(
+            "spotify_client -- Getting albums for artist id %s", artist_id
+        )
+        params: Dict[str, Any] = {"limit": limit}
+        if include_groups:
+            params["include_groups"] = include_groups
+        result = self.requester._make_request(
+            "GET", f"/artists/{artist_id}/albums", params=params
+        )
+        logger.debug(
+            "Response getting albums for artist id %s: %s", artist_id, result
+        )
+        return result
