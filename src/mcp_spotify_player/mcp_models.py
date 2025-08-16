@@ -96,6 +96,16 @@ class AlbumInfo(BaseModel):
     total_tracks: int
     uri: str
 
+
+class ArtistInfo(BaseModel):
+    """Artist information"""
+    id: str
+    name: str
+    genres: List[str] = []
+    followers: int = 0
+    popularity: int = 0
+    uri: str
+
 # Models for MCP manifest
 class MCPTool(BaseModel):
     """MCP tool"""
@@ -114,4 +124,4 @@ class MCPManifest(BaseModel):
     api: Dict[str, Any]
     contactEmail: Optional[str] = None
     legalInfoUrl: Optional[str] = None
-    tools: List[MCPTool] 
+    tools: List[MCPTool]
