@@ -9,13 +9,16 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 - **Device information**: List available playback devices
 - **Volume control**: Adjust volume from 0 to 100%
 - **Repeat mode**: Set to off, context, or track
+- **Queue management**: Add items to the queue and view upcoming tracks
 - **Music search**: Search for songs, artists, and albums
+- **Collection search**: Find public playlists or albums
 - **Album browsing**: View album details and track lists
 - **Saved albums**: List albums saved in your library
 - **Check saved albums**: Verify if albums are in your library
 - **Save albums**: Add albums to your library
 - **Delete saved albums**: Remove albums from your library
-- **Playlist management**: List, create, rename, clear, and add tracks to your playlists
+- **Playlist management**: List playlists, retrieve tracks, create, rename, clear, and add tracks
+- **Diagnostics**: Display authentication and environment info
 - **Integration with Claude**: Use natural commands to control your music
 
 ## 📋 Requirements
@@ -85,33 +88,9 @@ If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
 3. Get your `CLIENT_ID` and `CLIENT_SECRET`
 4. In the app settings, add `http://127.0.0.1:8000/auth/callback` as a redirect URI
 
-## 🎯 Usage with Cursor
+## 🛠️ Commands
 
-### MCP Server configuration
-
-1. **Copy the MCP configuration**:
-   ```bash
-   cp mcp-spotify-player.yaml ~/.cursor/mcp-servers/
-   ```
-
-2. **Edit the configuration**:
-    - Change `cwd` to the actual path of your project
-    - Set environment variables with your credentials
-
-3. **Restart Cursor** to load the new configuration
-
-### Authentication
-
-1. **Start Cursor** and open a conversation
-2. **The MCP server will connect automatically**
-3. **To authenticate with Spotify**, use the command:
-   ```
-   /auth
-   ```
-
-### Available commands
-
-Once authenticated, you can use these commands:
+After authenticating with Spotify, you can use these commands in your MCP client:
 
 - `play_music` — "Play Bohemian Rhapsody"
 - `pause_music` — "Pause the music"
@@ -137,6 +116,9 @@ Once authenticated, you can use these commands:
 - `rename_playlist` — "Rename playlist 'Road Trip' to 'Vacation'"
 - `clear_playlist` — "Remove all songs from playlist 'Road Trip'"
 - `add_tracks_to_playlist` — "Add these songs to playlist 'Road Trip'"
+- `queue_add` — "Add this track to the queue"
+- `queue_list` — "Show the upcoming queue"
+- `diagnose` — "Display diagnostic information"
 
 ### Search – Playlists & Albums
 
@@ -192,7 +174,7 @@ mcp-spotify-player/
 
 ### MCP stdio server
 
-- For integration with Cursor
+- For integration with MCP clients
 - JSON-RPC protocol over stdio
 - Direct communication with Claude
 
@@ -206,9 +188,9 @@ python -m mcp_spotify_player
 
 ## 🐛 Troubleshooting
 
-### Timeout error in Cursor
+### Timeout error
 
-If you see this error in Cursor logs:
+If you see this error in client logs:
 
 ```
 McpError: MCP error -32001: Request timed out
@@ -229,7 +211,7 @@ If you see "Not authenticated with Spotify":
 
 ### Browser not responding
 
-**IMPORTANT**: The MCP stdio server does NOT use HTTP. Do not open the browser when using Cursor. The server
+**IMPORTANT**: The MCP stdio server does NOT use HTTP. Do not open the browser when using MCP clients. The server
 communicates directly via stdio.
 
 ## 📝 License

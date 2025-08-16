@@ -16,7 +16,7 @@ def main(argv: list[str] | None = None) -> None:
     logger.info("MCP Spotify Player - stdio server")
     logger.info("=" * 50)
     logger.info("Initializying MCP server...")
-    logger.info("This server connect to Cursor through STDIO")
+    logger.info("This server connects to MCP clients through STDIO")
     logger.info("Do not open browser, this server is not using HTTP")
     logger.info("=" * 50)
 

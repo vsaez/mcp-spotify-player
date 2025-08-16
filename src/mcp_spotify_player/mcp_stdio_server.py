@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 MCP server for Spotify Player using stdio
-Implements the MCP protocol over JSON-RPC for communication with Cursor
+Implements the MCP protocol over JSON-RPC for communication with MCP clients
 """
 
 import json

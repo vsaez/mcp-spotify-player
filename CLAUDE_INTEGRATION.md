@@ -13,12 +13,7 @@
    - `"tu_client_secret_aqui"` to your actual CLIENT_SECRET
    - `"Z:/projects/mcp/mcp-spotify-player"` to your actual path
 
-**Option B - Cursor:**
-1. Copy the `mcp-spotify-player.yaml` file to `~/.cursor/mcp-servers/`
-2. Edit the credentials and path as above
-3. Restart Cursor
-
-**Option C - Other MCP clients:**
+**Option B - Other MCP clients:**
 1. Use the `mcp-spotify-player.yaml` file
 2. Edit the credentials as above
 
@@ -67,7 +62,7 @@ Once configured, you can say to Claude:
 }
 ```
 
-### For Cursor and other clients (`mcp-spotify-player.yaml`):
+### For other clients (`mcp-spotify-player.yaml`):
 ```yaml
 mcpServers:
   spotify-player:
@@ -104,7 +99,7 @@ Once integrated, Claude can use these commands:
 ### MCP stdio server (Recommended for Claude)
 - **File**: `start_mcp_server.py`
 - **Protocol**: JSON-RPC over stdio
-- **Usage**: Direct integration with Claude Desktop, Cursor, etc.
+- **Usage**: Direct integration with MCP-compatible clients
 - **Communication**: Direct, no HTTP
 
 **Note**: For integration with Claude, always use the MCP stdio server (`start_mcp_server.py`).
@@ -123,14 +118,14 @@ Once integrated, Claude can use these commands:
 - Check that the credentials in the config file are correct
 - Ensure the redirect URL matches your Spotify app configuration
 
-### Cursor timeout error
+### Timeout error
 If you see `McpError: MCP error -32001: Request timed out`:
-1. Verify you are using `start_mcp_server.py` in the MCP configuration
-2. Restart Cursor after changing the configuration
+1. Verify you are using `start_mcp_server.py` in your MCP configuration
+2. Restart the client after changing the configuration
 3. Ensure environment variables are set
 
 ### Browser not responding
-**IMPORTANT**: The MCP stdio server does NOT use HTTP. Do not open the browser when using Cursor.
+**IMPORTANT**: The MCP stdio server does NOT use HTTP. Do not open the browser when using MCP clients.
 
 ## 📞 Support
 
@@ -138,4 +133,3 @@ If you have issues:
 1. Verify the server runs manually with `python start_mcp_server.py`
 2. Check the server logs
 3. Review the Spotify Developer Dashboard configuration
-4. For Cursor, check `CONFIGURACION_CURSOR.md` for specific instructions
