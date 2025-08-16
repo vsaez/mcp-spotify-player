@@ -22,7 +22,41 @@ def try_load_tokens() -> Optional[Tokens]:
 
     path: Path = resolve_tokens_path()
     if not path.exists():
-        return None
+        # Attempt to create a new token file using the client credentials flow
+        config = Config()
+        client_id = config.SPOTIFY_CLIENT_ID
+        client_secret = config.SPOTIFY_CLIENT_SECRET
+        if not client_id or not client_secret:
+            return None
+
+        data = {
+            "grant_type": "client_credentials",
+            "client_id": client_id,
+            "client_secret": client_secret,
+        }
+
+        response = requests.post(config.SPOTIFY_TOKEN_URL, data=data)
+        if response.status_code != 200:
+            logger.error(
+                "Failed to obtain access token: %s %s",
+                response.status_code,
+                response.text,
+            )
+            return None
+
+        token_data = response.json()
+        stored = {
+            "access_token": token_data.get("access_token", ""),
+            "refresh_token": "",
+            "expires_at": int(time.time())
+            + int(token_data.get("expires_in", 0)),
+            "scopes": token_data.get("scope", "").split(),
+        }
+
+        os.makedirs(path.parent, exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(stored, f)
+
     return load_tokens(path)
 
 
