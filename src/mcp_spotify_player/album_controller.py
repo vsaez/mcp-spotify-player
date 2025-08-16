@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from mcp_logging import get_logger
 from mcp_spotify_player.mcp_models import AlbumInfo
@@ -34,6 +34,33 @@ class AlbumController:
                 )
                 return {"success": True, "album": album_info.dict()}
             return {"success": False, "message": "Could not get album"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
+    def get_albums(self, album_ids: List[str]) -> Dict[str, Any]:
+        """Retrieve information for multiple albums by their IDs."""
+        try:
+            if not album_ids or not all(self._validate_spotify_id(aid) for aid in album_ids):
+                return {
+                    "success": False,
+                    "message": "Invalid album IDs. Provide valid Spotify IDs.",
+                }
+            albums_data = self.albums_client.get_albums(album_ids)
+            if albums_data and albums_data.get("albums"):
+                albums = [
+                    AlbumInfo(
+                        id=album.get("id", ""),
+                        name=album.get("name", ""),
+                        artists=[artist.get("name", "") for artist in album.get("artists", [])],
+                        release_date=album.get("release_date"),
+                        total_tracks=album.get("total_tracks", 0),
+                        uri=album.get("uri", ""),
+                    ).dict()
+                    for album in albums_data.get("albums", [])
+                    if album
+                ]
+                return {"success": True, "albums": albums}
+            return {"success": False, "message": "Could not get albums"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 

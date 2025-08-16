@@ -68,6 +68,7 @@ class MCPServer:
             "get_playlists": self.controller.playlists.get_playlists,
             "get_playlist_tracks": self.controller.playlists.get_playlist_tracks,
             "get_album": self.controller.albums.get_album,
+            "get_albums": self.controller.albums.get_albums,
             "rename_playlist": self.controller.playlists.rename_playlist,
             "clear_playlist": self.controller.playlists.clear_playlist,
             "create_playlist": self.controller.playlists.create_playlist,
@@ -85,6 +86,7 @@ class MCPServer:
             "search_collections": self._validate_search_collections,
             "get_playlist_tracks": self._validate_get_playlist_tracks,
             "get_album": self._validate_get_album,
+            "get_albums": self._validate_get_albums,
             "rename_playlist": self._validate_rename_playlist,
             "clear_playlist": self._validate_clear_playlist,
             "create_playlist": self._validate_create_playlist,
@@ -102,6 +104,7 @@ class MCPServer:
             "get_playlists": self._format_json_result,
             "get_playlist_tracks": self._format_json_result,
             "get_album": self._format_json_result,
+            "get_albums": self._format_json_result,
             "queue_list": self._format_json_result,
         }
 
@@ -289,6 +292,16 @@ class MCPServer:
             raise ValueError(
                 "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
             )
+
+    def _validate_get_albums(self, arguments: Dict[str, Any]):
+        album_ids = arguments.get("album_ids")
+        if not album_ids or not isinstance(album_ids, list):
+            raise ValueError("album_ids is required")
+        for album_id in album_ids:
+            if album_id.isdigit() and len(album_id) < 10:
+                raise ValueError(
+                    "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
+                )
 
     def _validate_clear_playlist(self, arguments: Dict[str, Any]):
         if not arguments.get("playlist_id"):
