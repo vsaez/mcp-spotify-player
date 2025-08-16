@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 from mcp_logging import get_logger
-from mcp_spotify_player.mcp_models import AlbumInfo
+from mcp_spotify_player.mcp_models import AlbumInfo, TrackInfo
 from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = get_logger(__name__)
@@ -34,6 +34,37 @@ class AlbumController:
                 )
                 return {"success": True, "album": album_info.dict()}
             return {"success": False, "message": "Could not get album"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
+    def get_album_tracks(self, album_id: str, limit: int = 20) -> Dict[str, Any]:
+        """Retrieve tracks from an album."""
+        try:
+            if not self._validate_spotify_id(album_id):
+                return {
+                    "success": False,
+                    "message": "Invalid album ID. It must be a valid Spotify ID.",
+                }
+            tracks_data = self.albums_client.get_album_tracks(album_id, limit)
+            if tracks_data and tracks_data.get("items"):
+                track_list = []
+                for track in tracks_data.get("items", []):
+                    track_info = TrackInfo(
+                        name=track.get("name", ""),
+                        artist=track.get("artists", [{}])[0].get("name", ""),
+                        album=track.get("album", {}).get("name", ""),
+                        uri=track.get("uri", ""),
+                        duration_ms=track.get("duration_ms", 0),
+                        external_url=track.get("external_urls", {}).get("spotify", ""),
+                    )
+                    track_list.append(track_info.dict())
+
+                return {
+                    "success": True,
+                    "tracks": track_list,
+                    "total_tracks": tracks_data.get("total", 0),
+                }
+            return {"success": False, "message": "Could not get album tracks"}
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 

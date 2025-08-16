@@ -275,6 +275,26 @@ MANIFEST = {
             }
         },
         {
+            "name": "get_album_tracks",
+            "description": "Retrieve tracks from a given album",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "album_id": {
+                        "type": "string",
+                        "description": "Album ID"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 20
+                    }
+                },
+                "required": ["album_id"]
+            }
+        },
+        {
             "name": "rename_playlist",
             "description": "Rename a Spotify playlist by its ID to a new name",
             "inputSchema": {

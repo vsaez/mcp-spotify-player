@@ -10,6 +10,7 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 - **Volume control**: Adjust volume from 0 to 100%
 - **Repeat mode**: Set to off, context, or track
 - **Music search**: Search for songs, artists, and albums
+- **Album browsing**: View album details and track lists
 - **Playlist management**: List, create, rename, clear, and add tracks to your playlists
 - **Integration with Claude**: Use natural commands to control your music
 
@@ -123,6 +124,7 @@ Once authenticated, you can use these commands:
 - `get_playlist_tracks` — "Show tracks in playlist 'Road Trip'"
 - `get_album` — "Show info about album 'The Dark Side of the Moon'"
 - `get_albums` — "Show info about multiple albums"
+- `get_album_tracks` — "Show tracks in album 'The Dark Side of the Moon'"
 - `create_playlist` — "Create playlist 'Road Trip' with these songs..."
 - `rename_playlist` — "Rename playlist 'Road Trip' to 'Vacation'"
 - `clear_playlist` — "Remove all songs from playlist 'Road Trip'"

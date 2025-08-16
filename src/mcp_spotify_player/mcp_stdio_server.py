@@ -69,6 +69,7 @@ class MCPServer:
             "get_playlist_tracks": self.controller.playlists.get_playlist_tracks,
             "get_album": self.controller.albums.get_album,
             "get_albums": self.controller.albums.get_albums,
+            "get_album_tracks": self.controller.albums.get_album_tracks,
             "rename_playlist": self.controller.playlists.rename_playlist,
             "clear_playlist": self.controller.playlists.clear_playlist,
             "create_playlist": self.controller.playlists.create_playlist,
@@ -87,6 +88,7 @@ class MCPServer:
             "get_playlist_tracks": self._validate_get_playlist_tracks,
             "get_album": self._validate_get_album,
             "get_albums": self._validate_get_albums,
+            "get_album_tracks": self._validate_get_album_tracks,
             "rename_playlist": self._validate_rename_playlist,
             "clear_playlist": self._validate_clear_playlist,
             "create_playlist": self._validate_create_playlist,
@@ -105,6 +107,7 @@ class MCPServer:
             "get_playlist_tracks": self._format_json_result,
             "get_album": self._format_json_result,
             "get_albums": self._format_json_result,
+            "get_album_tracks": self._format_json_result,
             "queue_list": self._format_json_result,
         }
 
@@ -302,6 +305,18 @@ class MCPServer:
                 raise ValueError(
                     "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
                 )
+
+
+
+    def _validate_get_album_tracks(self, arguments: Dict[str, Any]):
+        album_id = arguments.get("album_id")
+        if not album_id:
+            raise ValueError("album_id is required")
+        if album_id.isdigit() and len(album_id) < 10:
+            raise ValueError(
+                "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes.",
+            )
+        arguments.setdefault("limit", 20)
 
     def _validate_clear_playlist(self, arguments: Dict[str, Any]):
         if not arguments.get("playlist_id"):

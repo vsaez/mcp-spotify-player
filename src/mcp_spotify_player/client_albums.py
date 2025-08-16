@@ -34,3 +34,17 @@ class SpotifyAlbumsClient:
             result,
         )
         return result
+
+    def get_album_tracks(self, album_id: str, limit: int = 20) -> Optional[Dict[str, Any]]:
+        """Retrieve tracks for a specific album."""
+        logger.info(
+            "spotify_client -- Getting tracks for album id %s", album_id
+        )
+        params = {"limit": limit}
+        result = self.requester._make_request(
+            "GET", f"/albums/{album_id}/tracks", params=params
+        )
+        logger.debug(
+            "Response getting tracks for album id %s: %s", album_id, result
+        )
+        return result
