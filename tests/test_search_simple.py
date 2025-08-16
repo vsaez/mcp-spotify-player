@@ -13,7 +13,7 @@ def test_search_methods():
     client = SpotifyClient()
     calls = []
 
-    def fake_make_request(method, endpoint, params=None, json=None):
+    def fake_make_request(method, endpoint, params=None, json=None, **kwargs):
         calls.append({'method': method, 'endpoint': endpoint, 'params': params})
         return {'ok': True}
 
@@ -22,15 +22,15 @@ def test_search_methods():
     # search_tracks wrapper
     result = client.search_tracks('jazz', limit=5)
     assert result == {'ok': True}
-    assert calls[-1]['params'] == {'q': 'jazz', 'type': 'track', 'limit': 5}
+    assert calls[-1]['params'] == {'q': 'jazz', 'type': 'track', 'limit': 5, 'offset': 0}
 
     # search_artists wrapper
     result = client.search_artists('miles', limit=3)
     assert result == {'ok': True}
-    assert calls[-1]['params'] == {'q': 'miles', 'type': 'artist', 'limit': 3}
+    assert calls[-1]['params'] == {'q': 'miles', 'type': 'artist', 'limit': 3, 'offset': 0}
 
     # generic search for albums
     result = client.search('blue', type_='album', limit=2)
     assert result == {'ok': True}
-    assert calls[-1]['params'] == {'q': 'blue', 'type': 'album', 'limit': 2}
+    assert calls[-1]['params'] == {'q': 'blue', 'type': 'album', 'limit': 2, 'offset': 0}
 
