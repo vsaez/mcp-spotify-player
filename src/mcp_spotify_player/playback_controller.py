@@ -239,6 +239,58 @@ class PlaybackController:
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    def search_collections(
+        self,
+        q: str,
+        type: str,
+        limit: int = 20,
+        offset: int = 0,
+        market: str | None = None,
+    ) -> Dict[str, Any]:
+        """Search for playlists or albums on Spotify."""
+        try:
+            result = self.playback_client.search_collections(q, type, limit, offset, market)
+
+            if isinstance(result, dict) and "error" in result:
+                err = result["error"]
+                message = err.get("message", "Unknown error")
+                status = err.get("status")
+                if status is not None:
+                    message = f"{status}: {message}"
+                return {"error": message}
+
+            container_key = "playlists" if type == "playlist" else "albums"
+            if not result or container_key not in result:
+                return {"type": type, "limit": limit, "offset": offset, "total": 0, "items": []}
+
+            container = result[container_key]
+
+            items: List[Dict[str, Any]] = []
+            for item in container.get("items", []):
+                images = item.get("images", [])
+                image_url = images[0]["url"] if images else None
+                entry = {
+                    "id": item.get("id"),
+                    "name": item.get("name"),
+                    "uri": item.get("uri"),
+                    "image": image_url,
+                }
+                if type == "album":
+                    entry["artists"] = [a.get("name") for a in item.get("artists", [])]
+                logger.info("playback controller [search_collections] --> entry with artists: %s", entry)
+                items.append(entry)
+
+            return {
+                "type": type,
+                "limit": container.get("limit", limit),
+                "offset": container.get("offset", offset),
+                "total": container.get("total", 0),
+                "items": items,
+            }
+        except Exception as e:
+            logger.error("Error in search_collections: %s", e)
+            return {"error": str(e)}
+
     def queue_add(self, uri: str, device_id: str | None = None) -> dict:
         """Add a track/episode to the active device queue."""
         try:

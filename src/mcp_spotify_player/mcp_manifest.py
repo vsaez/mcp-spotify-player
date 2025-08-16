@@ -178,6 +178,42 @@ MANIFEST = {
             }
         },
         {
+            "name": "search_collections",
+            "description": "Search for playlists or albums on Spotify",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "q": {
+                        "type": "string",
+                        "description": "Search term",
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["playlist", "album"],
+                        "description": "Type of collection to search",
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 50,
+                        "default": 20,
+                        "description": "Number of items to return",
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0,
+                        "description": "Index of the first result to return",
+                    },
+                    "market": {
+                        "type": "string",
+                        "description": "ISO 3166-1 alpha-2 market code",
+                    },
+                },
+                "required": ["q", "type"],
+            },
+        },
+        {
             "name": "get_playlists",
             "description": "Retrieve the user's playlists list",
             "inputSchema": {

@@ -64,6 +64,7 @@ class MCPServer:
             "get_playback_state": self.controller.playback.get_playback_state,
             "get_devices": self.controller.playback.get_devices,
             "search_music": self.controller.playback.search_music,
+            "search_collections": self.controller.playback.search_collections,
             "get_playlists": self.controller.playlists.get_playlists,
             "get_playlist_tracks": self.controller.playlists.get_playlist_tracks,
             "rename_playlist": self.controller.playlists.rename_playlist,
@@ -80,6 +81,7 @@ class MCPServer:
             "set_volume": self._validate_set_volume,
             "set_repeat": self._validate_set_repeat,
             "search_music": self._validate_search_music,
+            "search_collections": self._validate_search_collections,
             "get_playlist_tracks": self._validate_get_playlist_tracks,
             "rename_playlist": self._validate_rename_playlist,
             "clear_playlist": self._validate_clear_playlist,
@@ -94,6 +96,7 @@ class MCPServer:
             "get_playback_state": self._format_get_playback_state,
             "get_devices": self._format_json_result,
             "search_music": self._format_json_result,
+            "search_collections": self._format_json_result,
             "get_playlists": self._format_json_result,
             "get_playlist_tracks": self._format_json_result,
             "queue_list": self._format_json_result,
@@ -187,6 +190,7 @@ class MCPServer:
 
             result = handler(**arguments)
             formatter = self.RESULT_FORMATTERS.get(tool_name, self._default_formatter)
+            logger.info("AAAAAAAAAAAAAAA executing tool: %s with arguments: %s", tool_name, arguments)
             return formatter(result, arguments)
 
         except McpUserError:
@@ -242,6 +246,21 @@ class MCPServer:
     def _validate_search_music(self, arguments: Dict[str, Any]):
         if not arguments.get("query"):
             raise ValueError("query is required")
+
+    def _validate_search_collections(self, arguments: Dict[str, Any]):
+        if not arguments.get("q"):
+            raise ValueError("q is required")
+        collection_type = arguments.get("type")
+        if collection_type not in ("playlist", "album"):
+            raise ValueError("type must be 'playlist' or 'album'")
+        limit = arguments.get("limit", 20)
+        if not isinstance(limit, int) or limit < 1 or limit > 50:
+            raise ValueError("limit must be between 1 and 50")
+        offset = arguments.get("offset", 0)
+        if not isinstance(offset, int) or offset < 0:
+            raise ValueError("offset must be >= 0")
+        arguments.setdefault("limit", limit)
+        arguments.setdefault("offset", offset)
 
     def _validate_get_playlist_tracks(self, arguments: Dict[str, Any]):
         playlist_id = arguments.get("playlist_id")
@@ -329,10 +348,23 @@ class MCPServer:
             return f"No music playing | Volume: {volume}% | Device: {device}"
         return f"Could not retrieve state: {result.get('message', 'Unknown error')}"
 
-    def _format_json_result(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
-        if result.get("success"):
-            return json.dumps(result)
-        return json.dumps({"success": False, "message": result.get("message", "Unknown error")})
+    def _format_json_result(self, result, _args):
+        """
+        Envuelve cualquier resultado en un sobre estándar y evita petar si el result
+        no es serializable.
+        """
+        try:
+            payload = {"success": True, "data": result}
+            return json.dumps(payload, ensure_ascii=False)
+        except Exception as e:
+            logger.exception("Failed to serialize tool result for %s", _args)
+            return json.dumps({"success": False, "message": str(e) or "Unknown error"})
+
+    # def _format_json_result(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
+    #     logger.info(f"BBBBBBBBBBBBBBBB formatting result: {result}")
+    #     if result.get("success"):
+    #         return json.dumps(result)
+    #     return json.dumps({"success": False, "message": result.get("message", "Unknown error")})
 
     def run(self):
         """Run the MCP server"""
