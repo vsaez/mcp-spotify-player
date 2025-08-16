@@ -348,10 +348,23 @@ class MCPServer:
             return f"No music playing | Volume: {volume}% | Device: {device}"
         return f"Could not retrieve state: {result.get('message', 'Unknown error')}"
 
-    def _format_json_result(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
-        if result.get("success"):
-            return json.dumps(result)
-        return json.dumps({"success": False, "message": result.get("message", "Unknown error")})
+    def _format_json_result(self, result, _args):
+        """
+        Envuelve cualquier resultado en un sobre estándar y evita petar si el result
+        no es serializable.
+        """
+        try:
+            payload = {"success": True, "data": result}
+            return json.dumps(payload, ensure_ascii=False)
+        except Exception as e:
+            logger.exception("Failed to serialize tool result for %s", _args)
+            return json.dumps({"success": False, "message": str(e) or "Unknown error"})
+
+    # def _format_json_result(self, result: Dict[str, Any], _arguments: Dict[str, Any]) -> str:
+    #     logger.info(f"BBBBBBBBBBBBBBBB formatting result: {result}")
+    #     if result.get("success"):
+    #         return json.dumps(result)
+    #     return json.dumps({"success": False, "message": result.get("message", "Unknown error")})
 
     def run(self):
         """Run the MCP server"""

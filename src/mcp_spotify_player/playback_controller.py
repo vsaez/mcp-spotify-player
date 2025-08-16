@@ -249,45 +249,32 @@ class PlaybackController:
     ) -> Dict[str, Any]:
         """Search for playlists or albums on Spotify."""
         try:
-            logger.info("playback controller [search_collections] q: %s, type: %s, limit: %d, offset: %d, market: %s", q, type, limit, offset, market)
             result = self.playback_client.search_collections(q, type, limit, offset, market)
-            logger.info(f"Result of search collections: {result}")
+
             if isinstance(result, dict) and "error" in result:
                 err = result["error"]
                 message = err.get("message", "Unknown error")
                 status = err.get("status")
                 if status is not None:
                     message = f"{status}: {message}"
-                # Debug: print the full error response for troubleshooting
-                print(f"[DEBUG][search_collections] Full error response: {result}")
                 return {"error": message}
 
-            logger.info("playback controller [search_collections] --> NO ERROR ")
-
             container_key = "playlists" if type == "playlist" else "albums"
-
-            logger.info("playback controller [search_collections] --> container_key: %s", container_key)
-
             if not result or container_key not in result:
                 return {"type": type, "limit": limit, "offset": offset, "total": 0, "items": []}
 
-            logger.info("playback controller [search_collections] --> resultados y container key: %s", result)
-
             container = result[container_key]
 
-            logger.info("playback controller [search_collections] --> container: %s", container);
             items: List[Dict[str, Any]] = []
             for item in container.get("items", []):
                 images = item.get("images", [])
                 image_url = images[0]["url"] if images else None
-                logger.info("playback controller [search_collections] --> image_url: %s", image_url)
                 entry = {
                     "id": item.get("id"),
                     "name": item.get("name"),
                     "uri": item.get("uri"),
                     "image": image_url,
                 }
-                logger.info(f"playback controller [search_collections] --> entry: {entry}")
                 if type == "album":
                     entry["artists"] = [a.get("name") for a in item.get("artists", [])]
                 logger.info("playback controller [search_collections] --> entry with artists: %s", entry)

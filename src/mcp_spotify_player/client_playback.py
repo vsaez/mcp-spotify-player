@@ -106,14 +106,33 @@ class SpotifyPlaybackClient:
         """Get available playback devices"""
         return self.requester._make_request('GET', '/me/player/devices', feature='playback')
 
-    def _search(self, query: str, type_: str, limit: int = 10) -> Optional[Dict[str, Any]]:
+    # def _search(self, query: str, type_: str, limit: int = 10) -> Optional[Dict[str, Any]]:
+    #     """Internal helper to perform a search request against Spotify."""
+    #     params = {
+    #         'q': query,
+    #         'type': type_,
+    #         'limit': limit
+    #     }
+    #     return self.requester._make_request('GET', '/search', params=params)
+
+    def _search(
+            self,
+            query: str,
+            type_: str,
+            limit: int = 10,
+            offset: int = 0,
+            market: str | None = None
+    ) -> Optional[Dict[str, Any]]:
         """Internal helper to perform a search request against Spotify."""
         params = {
             'q': query,
             'type': type_,
-            'limit': limit
+            'limit': limit,
+            'offset': offset
         }
-        return self.requester._make_request('GET', '/search', params=params)
+        if market:
+            params['market'] = market
+        return self.requester._make_request('GET', '/search', params=params, feature='playback')
 
     def search(self, query: str, type_: str, limit: int = 10) -> Optional[Dict[str, Any]]:
         """Search for any supported type on Spotify (track, artist, album, etc.)."""
@@ -127,22 +146,28 @@ class SpotifyPlaybackClient:
         """Search for artists on Spotify."""
         return self._search(query, 'artist', limit)
 
-    def search_collections(
-        self,
-        q: str,
-        type: str,
-        limit: int = 20,
-        offset: int = 0,
-        market: str | None = None,
-    ) -> Optional[Dict[str, Any]]:
+    def search_collections(self, q: str, type: str, limit: int = 20, offset: int = 0, market: str | None = None):
         """Search for playlists or albums on Spotify."""
-        params = {
-            "q": q,
-            "type": type,
-            "limit": limit,
-            "offset": offset,
-        }
-        if market:
-            params["market"] = market
-        logging.info("DEBUG: Searching collections with params: %s", params)
-        return self.requester._make_request("GET", "/search", params=params)
+        return self._search(q, type, limit, offset, market)
+
+    # def search_collections(
+    #     self,
+    #     q: str,
+    #     type: str,
+    #     limit: int = 20,
+    #     offset: int = 0,
+    #     market: str | None = None,
+    # ) -> Optional[Dict[str, Any]]:
+    #     """Search for playlists or albums on Spotify."""
+    #     params = {
+    #         "q": q,
+    #         "type": type,
+    #         "limit": limit,
+    #         "offset": offset,
+    #     }
+    #     if market:
+    #         params["market"] = market
+    #     logging.info("DEBUG: Searching collections with params: %s", params)
+    #     return self.requester._make_request('GET', '/search', params=params)
+
+
