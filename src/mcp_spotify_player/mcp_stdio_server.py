@@ -68,6 +68,7 @@ class MCPServer:
             "get_playlists": self.controller.playlists.get_playlists,
             "get_playlist_tracks": self.controller.playlists.get_playlist_tracks,
             "get_artist": self.controller.artists.get_artist,
+            "get_artist_albums": self.controller.artists.get_artist_albums,
             "get_album": self.controller.albums.get_album,
             "get_albums": self.controller.albums.get_albums,
             "get_album_tracks": self.controller.albums.get_album_tracks,
@@ -92,6 +93,7 @@ class MCPServer:
             "search_collections": self._validate_search_collections,
             "get_playlist_tracks": self._validate_get_playlist_tracks,
             "get_artist": self._validate_get_artist,
+            "get_artist_albums": self._validate_get_artist_albums,
             "get_album": self._validate_get_album,
             "get_albums": self._validate_get_albums,
             "get_album_tracks": self._validate_get_album_tracks,
@@ -116,6 +118,7 @@ class MCPServer:
             "get_playlists": self._format_json_result,
             "get_playlist_tracks": self._format_json_result,
             "get_artist": self._format_json_result,
+            "get_artist_albums": self._format_json_result,
             "get_album": self._format_json_result,
             "get_albums": self._format_json_result,
             "get_album_tracks": self._format_json_result,
@@ -306,6 +309,21 @@ class MCPServer:
             raise ValueError(
                 "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
             )
+
+    def _validate_get_artist_albums(self, arguments: Dict[str, Any]):
+        artist_id = arguments.get("artist_id")
+        if not artist_id:
+            raise ValueError("artist_id is required")
+        if artist_id.isdigit() and len(artist_id) < 10:
+            raise ValueError(
+                "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
+            )
+        limit = arguments.get("limit")
+        if limit is not None:
+            if not isinstance(limit, int) or limit < 1 or limit > 50:
+                raise ValueError("limit must be between 1 and 50")
+        else:
+            arguments["limit"] = 20
 
     def _validate_rename_playlist(self, arguments: Dict[str, Any]):
         if not arguments.get("playlist_id"):
