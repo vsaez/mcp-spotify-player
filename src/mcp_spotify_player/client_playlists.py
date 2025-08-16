@@ -1,8 +1,8 @@
-import logging
-import sys
 from typing import Any, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
+from mcp_logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class SpotifyPlaylistsClient:
@@ -25,7 +25,7 @@ class SpotifyPlaylistsClient:
     ) -> Optional[Dict[str, Any]]:
         """Create a new playlist for the current user."""
         logger.info(
-            f"DEBUG: spotify_client -- Creating playlist with name {playlist_name}"
+            "spotify_client -- Creating playlist with name %s", playlist_name
         )
         user_profile = self.requester._make_request('GET', '/me')
         if not user_profile or 'id' not in user_profile:
@@ -38,9 +38,7 @@ class SpotifyPlaylistsClient:
         result = self.requester._make_request(
             'POST', f"/users/{user_profile['id']}/playlists", feature='playlists', json=payload
         )
-        sys.stderr.write(
-            f"DEBUG: Response creating playlist {playlist_name}: {result}\n"
-        )
+        logger.debug("Response creating playlist %s: %s", playlist_name, result)
         return result
 
     def get_playlist_tracks(self, playlist_id: str, limit: int = 20) -> Optional[Dict[str, Any]]:
@@ -50,36 +48,36 @@ class SpotifyPlaylistsClient:
 
     def rename_playlist(self, playlist_id: str, playlist_name: str) -> bool:
         """Rename a playlist from the user's library"""
-        logger.info(f"DEBUG: spotify_client -- Renaming playlist with id {playlist_id}")
+        logger.info("spotify_client -- Renaming playlist with id %s", playlist_id)
         result = self.requester._make_request(
             'PUT',
             f'/playlists/{playlist_id}',
             feature='playlists',
             json={"name": playlist_name}
         )
-        sys.stderr.write(f"DEBUG: Response renaming playlist by id {playlist_id}: {result}\n")
+        logger.debug("Response renaming playlist by id %s: %s", playlist_id, result)
         return result is not None
 
     def clear_playlist(self, playlist_id: str) -> bool:
         """Remove all tracks from a playlist"""
-        logger.info(f"DEBUG: spotify_client -- Clearing playlist with id {playlist_id}")
+        logger.info("spotify_client -- Clearing playlist with id %s", playlist_id)
         result = self.requester._make_request(
             'PUT',
             f'/playlists/{playlist_id}/tracks',
             feature='playlists',
             json={"uris": []}
         )
-        sys.stderr.write(f"DEBUG: Response clearing playlist by id {playlist_id}: {result}\n")
+        logger.debug("Response clearing playlist by id %s: %s", playlist_id, result)
         return result is not None
 
     def add_tracks_to_playlist(self, playlist_id: str, track_uris: List[str]) -> bool:
         """Add tracks to a playlist"""
-        logger.info(f"DEBUG: spotify_client -- Adding tracks to playlist {playlist_id}")
+        logger.info("spotify_client -- Adding tracks to playlist %s", playlist_id)
         result = self.requester._make_request(
             'POST',
             f'/playlists/{playlist_id}/tracks',
             feature='playlists',
             json={'uris': track_uris},
         )
-        sys.stderr.write(f"DEBUG: Response adding tracks to playlist {playlist_id}: {result}\n")
+        logger.debug("Response adding tracks to playlist %s: %s", playlist_id, result)
         return result is not None

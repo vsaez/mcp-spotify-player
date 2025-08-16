@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import logging
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -15,7 +14,9 @@ from mcp_spotify.errors import (
     RefreshNotPossibleError,
 )
 from mcp_spotify_player.config import Config, resolve_tokens_path
+from mcp_logging import get_logger
 
+logger = get_logger(__name__)
 
 @dataclass(slots=True)
 class Tokens:
@@ -111,7 +112,7 @@ def load_tokens(path: Path) -> Tokens:
     InvalidTokenFileError
         If the file is missing, malformed, or lacks required fields.
     """
-    logging.info(f"Loading tokens from {path}")
+    logger.info("Loading tokens from %s", path)
     if not path.exists():
         raise InvalidTokenFileError(f"Token file not found: {path}")
 
@@ -132,7 +133,7 @@ def load_tokens(path: Path) -> Tokens:
     invalid: list[str] = []
 
     for key, typ in required:
-        logging.info(f"Checking key '{key}' of type {typ.__name__}. Value: {data.get(key)}")
+        logger.info("Checking key '%s' of type %s. Value: %s", key, typ.__name__, data.get(key))
         if key not in data:
             missing.append(key)
         elif not isinstance(data[key], typ):

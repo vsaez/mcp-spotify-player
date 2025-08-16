@@ -5,12 +5,13 @@ Implements the MCP protocol over JSON-RPC for communication with Cursor
 """
 
 import json
-import logging
 import sys
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 import platform
+
+from mcp_logging import get_logger
 
 import mcp_spotify_player
 
@@ -22,8 +23,7 @@ from mcp_spotify_player.mcp_manifest import MANIFEST
 from mcp_spotify_player.spotify_controller import SpotifyController
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class MCPServer:
@@ -190,7 +190,7 @@ class MCPServer:
 
             result = handler(**arguments)
             formatter = self.RESULT_FORMATTERS.get(tool_name, self._default_formatter)
-            logger.info("AAAAAAAAAAAAAAA executing tool: %s with arguments: %s", tool_name, arguments)
+            logger.info("Executing tool: %s with arguments: %s", tool_name, arguments)
             return formatter(result, arguments)
 
         except McpUserError:

@@ -1,5 +1,6 @@
-import logging
 from typing import Any, Callable, Optional
+
+from mcp_logging import get_logger
 
 from mcp_spotify.auth.tokens import Tokens
 from mcp_spotify.errors import InvalidTokenFileError
@@ -8,7 +9,7 @@ from mcp_spotify_player.playback_controller import PlaybackController
 from mcp_spotify_player.playlist_controller import PlaylistController
 from mcp_spotify_player.spotify_client import SpotifyClient
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 TokensProvider = Callable[[], Optional[Tokens]]
