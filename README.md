@@ -103,6 +103,21 @@ If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
 3. Get your `CLIENT_ID` and `CLIENT_SECRET`
 4. In the app settings, add `http://127.0.0.1:8000/auth/callback` as a redirect URI
 
+## 🐍 Quick Python Demo
+
+```python
+from mcp_spotify_player.spotify_controller import SpotifyController
+from mcp_spotify_player.client_auth import load_tokens
+c = SpotifyController(load_tokens)
+if not c.is_authenticated():
+    raise SystemExit("Run the auth tool first")
+c.play_music(query="Where Is My Mind by The Pixies")
+current = c.get_current_playing()
+name = current["item"]["name"]
+artist = current["item"]["artists"][0]["name"]
+print(f"{name} – {artist}")
+```
+
 ## 🛠️ Commands
 
 After authenticating with Spotify, you can use these commands in your MCP client:
@@ -138,23 +153,16 @@ After authenticating with Spotify, you can use these commands in your MCP client
 - `queue_list` — "Show the upcoming queue"
 - `diagnose` — "Display diagnostic information"
 
-### Search – Playlists & Albums
+### Prompt Examples
 
-Use the `search_collections` tool to find public playlists or albums.
+Copy and paste these prompts into your MCP client:
 
-```bash
-/search_collections {"q": "study", "type": "playlist", "limit": 5}
 ```
-
-Parameters:
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| `q` | string | Search query (required) |
-| `type` | string | `playlist` or `album` (required) |
-| `limit` | integer | 1–50, default 20 |
-| `offset` | integer | ≥0, default 0 |
-| `market` | string | Optional ISO 3166-1 alpha-2 code |
+Play "Where Is My Mind?" by The Pixies
+Search for albums by R.E.M.
+Add "Cayetano" by Carolina Durante to my queue
+Create a playlist called "Indie Mix" and add "Debaser" by The Pixies
+```
 
 ### Required scopes
 
