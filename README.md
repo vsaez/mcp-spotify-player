@@ -23,7 +23,7 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 
 ## 📋 Requirements
 
-- Python 3.8+
+- Python 3.10+
 - Spotify Premium account
 - Registered application in the Spotify Developer Dashboard
 
