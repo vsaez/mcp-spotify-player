@@ -124,6 +124,25 @@ class AlbumController:
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    def check_saved_albums(self, album_ids: List[str]) -> Dict[str, Any]:
+        """Check if the specified albums are saved in the user's library."""
+        try:
+            if not album_ids or not all(self._validate_spotify_id(aid) for aid in album_ids):
+                return {
+                    "success": False,
+                    "message": "Invalid album IDs. Provide valid Spotify IDs.",
+                }
+            result = self.albums_client.check_saved_albums(album_ids)
+            if result is not None:
+                albums = [
+                    {"id": aid, "saved": saved}
+                    for aid, saved in zip(album_ids, result)
+                ]
+                return {"success": True, "albums": albums}
+            return {"success": False, "message": "Could not check saved albums"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
     def save_albums(self, album_ids: List[str]) -> Dict[str, Any]:
         """Save albums to the user's library."""
         try:

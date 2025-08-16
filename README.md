@@ -12,6 +12,7 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 - **Music search**: Search for songs, artists, and albums
 - **Album browsing**: View album details and track lists
 - **Saved albums**: List albums saved in your library
+- **Check saved albums**: Verify if albums are in your library
 - **Save albums**: Add albums to your library
 - **Delete saved albums**: Remove albums from your library
 - **Playlist management**: List, create, rename, clear, and add tracks to your playlists
@@ -129,6 +130,7 @@ Once authenticated, you can use these commands:
 - `get_albums` — "Show info about multiple albums"
 - `get_album_tracks` — "Show tracks in album 'The Dark Side of the Moon'"
 - `get_saved_albums` — "List my saved albums"
+- `check_saved_albums` — "Check if these albums are saved"
 - `save_albums` — "Save these albums to my library"
 - `delete_saved_albums` — "Remove these albums from my library"
 - `create_playlist` — "Create playlist 'Road Trip' with these songs..."
