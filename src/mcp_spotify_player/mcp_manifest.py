@@ -282,6 +282,31 @@ MANIFEST = {
             },
         },
         {
+            "name": "get_artist_top_tracks",
+            "description": "Retrieve top tracks for a given artist ID",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "artist_id": {
+                        "type": "string",
+                        "description": "Spotify artist ID",
+                    },
+                    "market": {
+                        "type": "string",
+                        "description": "ISO 3166-1 alpha-2 country code",
+                        "default": "US",
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10,
+                        "default": 10,
+                    },
+                },
+                "required": ["artist_id"],
+            },
+        },
+        {
             "name": "get_album",
             "description": "Retrieve album information by its ID",
             "inputSchema": {

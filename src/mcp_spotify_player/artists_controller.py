@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 from mcp_logging import get_logger
-from mcp_spotify_player.mcp_models import AlbumInfo, ArtistInfo
+from mcp_spotify_player.mcp_models import AlbumInfo, ArtistInfo, TrackInfo
 from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = get_logger(__name__)
@@ -83,6 +83,45 @@ class ArtistsController:
         except Exception as e:
             logger.error(
                 "Error retrieving albums for artist %s: %s", artist_id, e
+            )
+            return {"success": False, "message": f"Error: {str(e)}"}
+
+    def get_artist_top_tracks(
+        self, artist_id: str, *, market: str = "US", limit: int = 10
+    ) -> Dict[str, Any]:
+        """Retrieve top tracks for a specific artist."""
+        logger.info(
+            "artists_controller -- Getting top tracks for artist id %s", artist_id
+        )
+        try:
+            if not self._validate_spotify_id(artist_id):
+                return {
+                    "success": False,
+                    "message": "Invalid artist ID. It must be a valid Spotify ID.",
+                }
+            tracks_data = self.artists_client.get_artist_top_tracks(
+                artist_id, market=market
+            )
+            if tracks_data and tracks_data.get("tracks"):
+                tracks: List[Dict[str, Any]] = []
+                for track in tracks_data.get("tracks", [])[:limit]:
+                    track_info = TrackInfo(
+                        name=track.get("name", ""),
+                        artist=track.get("artists", [{}])[0].get("name", ""),
+                        album=track.get("album", {}).get("name", ""),
+                        uri=track.get("uri", ""),
+                        duration_ms=track.get("duration_ms", 0),
+                        external_url=track.get("external_urls", {}).get(
+                            "spotify", ""
+                        ),
+                    )
+                    tracks.append(track_info.dict())
+
+                return {"success": True, "tracks": tracks, "total_tracks": len(tracks)}
+            return {"success": False, "message": "Could not get artist top tracks"}
+        except Exception as e:
+            logger.error(
+                "Error retrieving top tracks for artist %s: %s", artist_id, e
             )
             return {"success": False, "message": f"Error: {str(e)}"}
 

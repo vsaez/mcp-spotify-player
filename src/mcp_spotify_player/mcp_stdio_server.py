@@ -69,6 +69,7 @@ class MCPServer:
             "get_playlist_tracks": self.controller.playlists.get_playlist_tracks,
             "get_artist": self.controller.artists.get_artist,
             "get_artist_albums": self.controller.artists.get_artist_albums,
+            "get_artist_top_tracks": self.controller.artists.get_artist_top_tracks,
             "get_album": self.controller.albums.get_album,
             "get_albums": self.controller.albums.get_albums,
             "get_album_tracks": self.controller.albums.get_album_tracks,
@@ -94,6 +95,7 @@ class MCPServer:
             "get_playlist_tracks": self._validate_get_playlist_tracks,
             "get_artist": self._validate_get_artist,
             "get_artist_albums": self._validate_get_artist_albums,
+            "get_artist_top_tracks": self._validate_get_artist_top_tracks,
             "get_album": self._validate_get_album,
             "get_albums": self._validate_get_albums,
             "get_album_tracks": self._validate_get_album_tracks,
@@ -119,6 +121,7 @@ class MCPServer:
             "get_playlist_tracks": self._format_json_result,
             "get_artist": self._format_json_result,
             "get_artist_albums": self._format_json_result,
+            "get_artist_top_tracks": self._format_json_result,
             "get_album": self._format_json_result,
             "get_albums": self._format_json_result,
             "get_album_tracks": self._format_json_result,
@@ -324,6 +327,27 @@ class MCPServer:
                 raise ValueError("limit must be between 1 and 50")
         else:
             arguments["limit"] = 20
+
+    def _validate_get_artist_top_tracks(self, arguments: Dict[str, Any]):
+        artist_id = arguments.get("artist_id")
+        if not artist_id:
+            raise ValueError("artist_id is required")
+        if artist_id.isdigit() and len(artist_id) < 10:
+            raise ValueError(
+                "The provided identifier appears to be a position number, not a valid Spotify ID. Spotify IDs are long alphanumeric codes."
+            )
+        limit = arguments.get("limit")
+        if limit is not None:
+            if not isinstance(limit, int) or limit < 1 or limit > 10:
+                raise ValueError("limit must be between 1 and 10")
+        else:
+            arguments["limit"] = 10
+        market = arguments.get("market")
+        if market is not None:
+            if not isinstance(market, str) or len(market) != 2:
+                raise ValueError("market must be a 2-letter country code")
+        else:
+            arguments["market"] = "US"
 
     def _validate_rename_playlist(self, arguments: Dict[str, Any]):
         if not arguments.get("playlist_id"):

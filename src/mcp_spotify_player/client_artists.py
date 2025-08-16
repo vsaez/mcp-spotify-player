@@ -40,3 +40,19 @@ class SpotifyArtistsClient:
             "Response getting albums for artist id %s: %s", artist_id, result
         )
         return result
+
+    def get_artist_top_tracks(
+        self, artist_id: str, *, market: str = "US"
+    ) -> Optional[Dict[str, Any]]:
+        """Retrieve top tracks for a specific artist."""
+        logger.info(
+            "spotify_client -- Getting top tracks for artist id %s", artist_id
+        )
+        params: Dict[str, Any] = {"market": market}
+        result = self.requester._make_request(
+            "GET", f"/artists/{artist_id}/top-tracks", params=params
+        )
+        logger.debug(
+            "Response getting top tracks for artist id %s: %s", artist_id, result
+        )
+        return result
