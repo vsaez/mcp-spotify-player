@@ -1,7 +1,6 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from mcp_logging import get_logger
-
 from mcp_spotify_player.mcp_models import AlbumInfo
 from mcp_spotify_player.spotify_client import SpotifyClient
 
