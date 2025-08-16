@@ -78,3 +78,18 @@ class SpotifyAlbumsClient:
         )
         logger.debug("Response saving albums %s: %s", ids_param, result)
         return result is not None
+
+    def delete_saved_albums(self, album_ids: List[str]) -> bool:
+        """Remove one or more albums from the user's library."""
+        ids_param = ",".join(album_ids)
+        logger.info(
+            "spotify_client -- Deleting albums with ids %s", ids_param
+        )
+        result = self.requester._make_request(
+            "DELETE",
+            "/me/albums",
+            feature="albums",
+            json={"ids": album_ids},
+        )
+        logger.debug("Response deleting albums %s: %s", ids_param, result)
+        return result is not None

@@ -139,6 +139,21 @@ class AlbumController:
         except Exception as e:
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    def delete_saved_albums(self, album_ids: List[str]) -> Dict[str, Any]:
+        """Remove albums from the user's library."""
+        try:
+            if not album_ids or not all(self._validate_spotify_id(aid) for aid in album_ids):
+                return {
+                    "success": False,
+                    "message": "Invalid album IDs. Provide valid Spotify IDs.",
+                }
+            result = self.albums_client.delete_saved_albums(album_ids)
+            if result:
+                return {"success": True, "message": "Albums deleted successfully"}
+            return {"success": False, "message": "Could not delete albums"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {str(e)}"}
+
     def _validate_spotify_id(self, id_string: str) -> bool:
         """Validates if the string is a valid Spotify ID"""
         return bool(id_string) and len(id_string) > 10 and id_string.isalnum()
