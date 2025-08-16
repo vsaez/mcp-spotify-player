@@ -22,9 +22,10 @@ _LOG_FILE = os.getenv("MCP_LOG_FILE")
 
 _handlers: list[logging.Handler] = [logging.StreamHandler()]
 if _LOG_FILE:
-    _handlers.append(logging.FileHandler(_LOG_FILE))
+    _handlers.append(logging.FileHandler(_LOG_FILE, encoding="utf-8"))
 
 logging.basicConfig(level=_LOG_LEVEL, format=_LOG_FORMAT, handlers=_handlers)
+
 
 def get_logger(name: str | None = None) -> logging.Logger:
     """Return a module-specific logger.

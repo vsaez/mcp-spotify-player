@@ -190,7 +190,7 @@ class MCPServer:
 
             result = handler(**arguments)
             formatter = self.RESULT_FORMATTERS.get(tool_name, self._default_formatter)
-            logger.info("AAAAAAAAAAAAAAA executing tool: %s with arguments: %s", tool_name, arguments)
+            logger.info("Executing tool: %s with arguments: %s", tool_name, arguments)
             return formatter(result, arguments)
 
         except McpUserError:
