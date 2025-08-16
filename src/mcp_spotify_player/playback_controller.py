@@ -288,7 +288,7 @@ class PlaybackController:
                 "items": items,
             }
         except Exception as e:
-            logger.error(f"Error in search_collections: %s", e)
+            logger.error("Error in search_collections: %s", e)
             return {"error": str(e)}
 
     def queue_add(self, uri: str, device_id: str | None = None) -> dict:
