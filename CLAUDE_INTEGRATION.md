@@ -11,6 +11,7 @@
 4. **IMPORTANT:** Edit the file and change:
    - `"tu_client_id_aqui"` to your actual CLIENT_ID
    - `"tu_client_secret_aqui"` to your actual CLIENT_SECRET
+   - `"path_to_your_python"` to your Python interpreter path
    - `"Z:/projects/mcp/mcp-spotify-player"` to your actual path
 
 **Option B - Other MCP clients:**
@@ -23,7 +24,7 @@ Before integrating with Claude, make sure the server is running:
 
 ```bash
 # In your terminal, from the project folder:
-python start_mcp_server.py
+python -m mcp_spotify_player
 ```
 
 ### 3. **Authenticate with Spotify**
@@ -48,8 +49,8 @@ Once configured, you can say to Claude:
 {
   "mcpServers": {
     "spotify-player": {
-      "command": "python",
-      "args": ["start_mcp_server.py"],
+      "command": "path_to_your_python",
+      "args": ["-m", "mcp_spotify_player"],
       "env": {
         "SPOTIFY_CLIENT_ID": "your_actual_client_id",
         "SPOTIFY_CLIENT_SECRET": "your_actual_client_secret",
@@ -66,9 +67,10 @@ Once configured, you can say to Claude:
 ```yaml
 mcpServers:
   spotify-player:
-    command: python
+    command: path_to_your_python
     args:
-      - start_mcp_server.py
+      - -m
+      - mcp_spotify_player
     env:
       SPOTIFY_CLIENT_ID: "your_actual_client_id"
       SPOTIFY_CLIENT_SECRET: "your_actual_client_secret"
@@ -97,19 +99,19 @@ Once integrated, Claude can use these commands:
 ## 🔧 Available server types
 
 ### MCP stdio server (Recommended for Claude)
-- **File**: `start_mcp_server.py`
+- **Command**: `python -m mcp_spotify_player`
 - **Protocol**: JSON-RPC over stdio
 - **Usage**: Direct integration with MCP-compatible clients
 - **Communication**: Direct, no HTTP
 
-**Note**: For integration with Claude, always use the MCP stdio server (`start_mcp_server.py`).
+**Note**: For integration with Claude, always use the MCP stdio server (`python -m mcp_spotify_player`).
 
 ## 🐛 Troubleshooting
 
 ### Error: "Server not found" or timeout
-- Check the server is running with `python start_mcp_server.py`
+- Check the server is running with `python -m mcp_spotify_player`
 - Make sure the path in `cwd` is correct
-- Ensure environment variables are set in the `env` file
+- Ensure environment variables are set in the `.env` file
 
 ### Error: "Authentication required"
 - Run the `/auth` command to authenticate
@@ -120,7 +122,7 @@ Once integrated, Claude can use these commands:
 
 ### Timeout error
 If you see `McpError: MCP error -32001: Request timed out`:
-1. Verify you are using `start_mcp_server.py` in your MCP configuration
+1. Verify you are using `python -m mcp_spotify_player` in your MCP configuration
 2. Restart the client after changing the configuration
 3. Ensure environment variables are set
 
@@ -130,6 +132,6 @@ If you see `McpError: MCP error -32001: Request timed out`:
 ## 📞 Support
 
 If you have issues:
-1. Verify the server runs manually with `python start_mcp_server.py`
+1. Verify the server runs manually with `python -m mcp_spotify_player`
 2. Check the server logs
 3. Review the Spotify Developer Dashboard configuration

@@ -4,8 +4,10 @@
 
 mcpServers:
   spotify-player:
-    command: mcp-spotify-player
-    args: []
+    command: path_to_your_python
+    args:
+      - -m
+      - mcp_spotify_player
     env:
       # Make sure these variables are set
       SPOTIFY_CLIENT_ID: "your_client_id_here"
