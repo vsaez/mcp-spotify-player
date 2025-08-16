@@ -325,6 +325,21 @@ MANIFEST = {
             }
         },
         {
+            "name": "delete_saved_albums",
+            "description": "Remove one or more albums from the user's library",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "album_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of Spotify album IDs"
+                    }
+                },
+                "required": ["album_ids"]
+            }
+        },
+        {
             "name": "rename_playlist",
             "description": "Rename a Spotify playlist by its ID to a new name",
             "inputSchema": {
