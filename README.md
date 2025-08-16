@@ -78,7 +78,19 @@ If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
   "access_token": "ACCESS",
   "refresh_token": "REFRESH",
   "expires_at": 1700000000,
-  "scopes": ["user-read-playback-state", "user-modify-playback-state"]
+  "scopes": [
+    "user-read-playback-state",
+    "user-modify-playback-state",
+    "user-read-currently-playing",
+    "user-read-recently-played",
+    "user-read-playback-position",
+    "user-top-read",
+    "playlist-read-private",
+    "playlist-read-collaborative",
+    "playlist-modify-private",
+    "user-library-read",
+    "user-library-modify"
+  ]
 }
 ```
 
@@ -144,7 +156,8 @@ Parameters:
 
 | Feature | Scopes |
 | ------- | ------ |
-| Playback control & status | `user-read-playback-state`, `user-modify-playback-state`, `user-read-currently-playing` |
+| Playback control & status | `user-read-playback-state`, `user-modify-playback-state`, `user-read-currently-playing`, `user-read-playback-position` |
+| Playback insights | `user-read-recently-played`, `user-top-read` |
 | Playlist management | `playlist-read-private`, `playlist-read-collaborative`, `playlist-modify-private` |
 | Library access | `user-library-read`, `user-library-modify` |
 
@@ -155,10 +168,17 @@ Parameters:
 ```
 mcp-spotify-player/
 ├── src/
+│   ├── mcp_logging/
+│   │   └── __init__.py
+│   ├── mcp_spotify/
+│   │   ├── __init__.py
+│   │   └── errors.py
 │   └── mcp_spotify_player/
 │       ├── __init__.py
-│       ├── cli.py
 │       ├── __main__.py
+│       ├── album_controller.py
+│       ├── cli.py
+│       ├── client_albums.py
 │       ├── client_auth.py
 │       ├── client_playback.py
 │       ├── client_playlists.py
