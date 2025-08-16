@@ -7,6 +7,7 @@ from mcp_spotify.errors import InvalidTokenFileError
 from mcp_spotify_player.client_auth import is_token_expired
 from mcp_spotify_player.playback_controller import PlaybackController
 from mcp_spotify_player.playlist_controller import PlaylistController
+from mcp_spotify_player.album_controller import AlbumController
 from mcp_spotify_player.spotify_client import SpotifyClient
 
 logger = get_logger(__name__)
@@ -23,6 +24,7 @@ class SpotifyController:
         self.client = SpotifyClient(tokens_provider)
         self.playback = PlaybackController(self.client)
         self.playlists = PlaylistController(self.client)
+        self.albums = AlbumController(self.client)
 
     def is_authenticated(self) -> bool:
         """Checks if valid authentication tokens are available."""
@@ -38,4 +40,6 @@ class SpotifyController:
             return getattr(self.playback, name)
         if hasattr(self.playlists, name):
             return getattr(self.playlists, name)
+        if hasattr(self.albums, name):
+            return getattr(self.albums, name)
         raise AttributeError(f"{self.__class__.__name__} object has no attribute {name}")

@@ -121,6 +121,7 @@ Once authenticated, you can use these commands:
 - `search_collections` — "Search for playlists or albums"
 - `get_playlists` — "List my playlists"
 - `get_playlist_tracks` — "Show tracks in playlist 'Road Trip'"
+- `get_album` — "Show info about album 'The Dark Side of the Moon'"
 - `create_playlist` — "Create playlist 'Road Trip' with these songs..."
 - `rename_playlist` — "Rename playlist 'Road Trip' to 'Vacation'"
 - `clear_playlist` — "Remove all songs from playlist 'Road Trip'"
