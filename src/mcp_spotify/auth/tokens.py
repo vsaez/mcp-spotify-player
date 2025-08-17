@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -65,11 +66,21 @@ def needs_refresh(tokens: Tokens, now: int | None = None) -> bool:
     return now >= tokens.expires_at - 60
 
 
+def has_refresh_token(tokens: Tokens | dict[str, Any]) -> bool:
+    """Return ``True`` if ``tokens`` contain a non-empty ``refresh_token``."""
+
+    if isinstance(tokens, Tokens):
+        return bool(tokens.refresh_token)
+    return bool(tokens.get("refresh_token"))
+
+
 def refresh_tokens(tokens: Tokens, client_id: str, client_secret: str) -> Tokens:
     """Refresh ``tokens`` using Spotify's OAuth refresh flow and persist them."""
 
     if not tokens.refresh_token:
-        raise RefreshNotPossibleError("No refresh_token. Please run /auth.")
+        raise RefreshNotPossibleError(
+            "Cannot refresh access token: missing refresh_token in stored credentials."
+        )
 
     data = {
         "grant_type": "refresh_token",
@@ -86,14 +97,18 @@ def refresh_tokens(tokens: Tokens, client_id: str, client_secret: str) -> Tokens
     refreshed = Tokens(
         access_token=payload["access_token"],
         refresh_token=payload.get("refresh_token", tokens.refresh_token),
-        expires_at=int(time.time()) + int(payload["expires_in"]),
+        expires_at=int(time.time()) + int(payload["expires_in"]) - 60,
         scopes=tokens.scopes,
     )
 
     path = resolve_tokens_path()
     data = asdict(refreshed)
-    data["scopes"] = sorted(refreshed.scopes)
-    path.write_text(json.dumps(data))
+    data.pop("scopes", None)
+    if refreshed.scopes:
+        data["scopes"] = sorted(refreshed.scopes)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(data))
+    os.replace(tmp, path)
     return refreshed
 
 
