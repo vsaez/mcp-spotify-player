@@ -6,6 +6,7 @@ from mcp_spotify.auth.tokens import (
     REQUIRED_SCOPES,
     Tokens,
     check_scopes,
+    has_refresh_token,
     needs_refresh,
     refresh_tokens,
 )
@@ -13,6 +14,7 @@ from mcp_spotify.errors import (
     NoActiveDeviceError,
     NotAuthenticatedError,
     PremiumRequiredError,
+    RefreshNotPossibleError,
 )
 from mcp_spotify_player.client_playback import SpotifyPlaybackClient
 from mcp_spotify_player.client_playlists import SpotifyPlaylistsClient
@@ -58,7 +60,7 @@ class SpotifyClient:
         tokens = self.tokens_provider()
         if tokens is None:
             raise NotAuthenticatedError("Not authenticated with Spotify. Run /auth.")
-        if needs_refresh(tokens):
+        if has_refresh_token(tokens) and needs_refresh(tokens):
             tokens = self._refresh(tokens)
 
         if feature and self.verify_scopes:
@@ -72,9 +74,14 @@ class SpotifyClient:
         response = requests.request(method, url, headers=headers, **kwargs)
 
         if response.status_code == 401:
-            tokens = self._refresh(tokens)
-            headers["Authorization"] = f"Bearer {tokens.access_token}"
-            response = requests.request(method, url, headers=headers, **kwargs)
+            if has_refresh_token(tokens):
+                tokens = self._refresh(tokens)
+                headers["Authorization"] = f"Bearer {tokens.access_token}"
+                response = requests.request(method, url, headers=headers, **kwargs)
+            else:
+                raise RefreshNotPossibleError(
+                    "Cannot refresh access token: missing refresh_token in stored credentials."
+                )
 
         if response.status_code in [200, 201, 204]:
             if method == "PUT" and endpoint == "/me/player/repeat":
