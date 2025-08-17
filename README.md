@@ -1,6 +1,6 @@
-# 🎵 MCP Spotify Player
+# 🎵 MCP Server for Spotify
 
-Control your Spotify music from Claude using the MCP (Model Context Protocol).
+MCP Server for Spotify lets you control your Spotify music from Claude using the MCP (Model Context Protocol).
 
 ## 🚀 Features
 
