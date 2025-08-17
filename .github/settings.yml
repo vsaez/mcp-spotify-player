@@ -1,0 +1,8 @@
+repository:
+  topics:
+    - mcp
+    - model-context-protocol
+    - spotify
+    - spotify-api
+    - claude
+    - cursor
