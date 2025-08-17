@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 import pytest
 
@@ -46,3 +47,11 @@ def test_valid_tokens(tmp_path: Path) -> None:
     assert tokens.access_token == "a"
     assert tokens.refresh_token == "r"
     assert tokens.expires_at == 1
+
+
+def test_load_tokens_minimal_shape_without_scopes(tmp_path: Path) -> None:
+    path = tmp_path / "tokens.json"
+    data = {"access_token": "a", "refresh_token": "r", "expires_at": 1}
+    path.write_text(json.dumps(data))
+    tokens = load_tokens(path)
+    assert tokens.scopes == set()

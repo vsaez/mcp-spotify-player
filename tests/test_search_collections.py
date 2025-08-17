@@ -1,6 +1,5 @@
 import os
 import sys
-from unittest.mock import patch
 import pytest
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -77,8 +76,7 @@ def test_search_collections_album_with_market():
 # Validation tests
 
 def _server():
-    with patch("mcp_spotify_player.mcp_stdio_server.try_load_tokens", return_value=None):
-        return MCPServer()
+    return MCPServer()
 
 
 def test_validate_search_collections_invalid_type():

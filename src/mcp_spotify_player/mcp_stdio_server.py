@@ -16,7 +16,7 @@ from mcp_logging import get_logger
 import mcp_spotify_player
 
 from mcp_spotify.auth.tokens import Tokens
-from mcp_spotify.errors import InvalidTokenFileError, McpUserError
+from mcp_spotify.errors import InvalidTokenFileError, McpUserError, UserAuthRequiredError
 from mcp_spotify_player.client_auth import try_load_tokens
 from mcp_spotify_player.config import Config, resolve_tokens_path
 from mcp_spotify_player.mcp_manifest import MANIFEST
@@ -32,19 +32,18 @@ class MCPServer:
 
         try:
             tokens = try_load_tokens()
-            self.auth_status = "OK"
         except InvalidTokenFileError as e:
             logger.error(str(e))
-            tokens = None
-            self.auth_status = "INVALID_TOKEN_FILE"
+            raise
 
-        self.current_tokens: Optional[Tokens] = tokens
+        if tokens is None or not tokens.refresh_token:
+            raise UserAuthRequiredError(
+                "No user token found. Run the OAuth authorization code flow to obtain a refresh_token. Client credentials are not sufficient for playback."
+            )
+
+        self.current_tokens: Tokens = tokens
 
         def tokens_provider() -> Optional[Tokens]:
-            if self.auth_status == "INVALID_TOKEN_FILE":
-                raise InvalidTokenFileError(
-                    "Token file is invalid. Fix tokens.json or run /auth to regenerate it."
-                )
             return self.current_tokens
 
         self.controller = SpotifyController(tokens_provider)

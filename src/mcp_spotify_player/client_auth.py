@@ -22,40 +22,7 @@ def try_load_tokens() -> Optional[Tokens]:
 
     path: Path = resolve_tokens_path()
     if not path.exists():
-        # Attempt to create a new token file using the client credentials flow
-        config = Config()
-        client_id = config.SPOTIFY_CLIENT_ID
-        client_secret = config.SPOTIFY_CLIENT_SECRET
-        if not client_id or not client_secret:
-            return None
-
-        data = {
-            "grant_type": "client_credentials",
-            "client_id": client_id,
-            "client_secret": client_secret,
-        }
-
-        response = requests.post(config.SPOTIFY_TOKEN_URL, data=data)
-        if response.status_code != 200:
-            logger.error(
-                "Failed to obtain access token: %s %s",
-                response.status_code,
-                response.text,
-            )
-            return None
-
-        token_data = response.json()
-        stored = {
-            "access_token": token_data.get("access_token", ""),
-            "refresh_token": "",
-            "expires_at": int(time.time())
-            + int(token_data.get("expires_in", 0)),
-            "scopes": token_data.get("scope", "").split(),
-        }
-
-        os.makedirs(path.parent, exist_ok=True)
-        with open(path, "w") as f:
-            json.dump(stored, f)
+        return None
 
     return load_tokens(path)
 
@@ -132,8 +99,8 @@ class SpotifyAuthClient:
         if response.status_code == 200:
             token_data = response.json()
             self.access_token = token_data["access_token"]
-            self.token_expires_at = int(time.time()) + int(token_data["expires_in"])
-            if "refresh_token" in token_data:
+            self.token_expires_at = int(time.time()) + int(token_data["expires_in"]) - 60
+            if token_data.get("refresh_token"):
                 self.refresh_token = token_data["refresh_token"]
             self._save_tokens()
             return True
@@ -141,15 +108,28 @@ class SpotifyAuthClient:
 
     def _save_tokens(self):
         """Save the tokens to a local file"""
-        token_data = {
+        if not isinstance(self.access_token, str):
+            raise TypeError("access_token must be str")
+        if not isinstance(self.refresh_token, str):
+            raise TypeError("refresh_token must be str")
+        if not isinstance(self.token_expires_at, (int, float)):
+            raise TypeError("expires_at must be int")
+        data: Dict[str, Any] = {
             "access_token": self.access_token,
             "refresh_token": self.refresh_token,
             "expires_at": int(self.token_expires_at),
-            "scopes": self.scopes,
         }
-        os.makedirs(os.path.dirname(self.tokens_file), exist_ok=True)
-        with open(self.tokens_file, "w") as f:
-            json.dump(token_data, f)
+        if self.scopes:
+            data["scopes"] = self.scopes
+        path = Path(self.tokens_file)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        tmp.write_text(json.dumps(data))
+        try:
+            os.replace(tmp, path)
+        except Exception:
+            tmp.unlink(missing_ok=True)
+            raise
 
     def _load_tokens(self) -> bool:
         """Load tokens from local file"""

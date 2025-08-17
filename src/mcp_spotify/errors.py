@@ -21,6 +21,10 @@ class RefreshNotPossibleError(McpUserError):
     """Raised when refreshing the Spotify access token is not possible."""
 
 
+class UserAuthRequiredError(McpUserError):
+    """Raised when a user OAuth token with refresh capability is required."""
+
+
 class MissingScopesError(McpUserError):
     """Raised when the OAuth token lacks required scopes."""
 
