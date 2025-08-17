@@ -125,6 +125,49 @@ class ArtistsController:
             )
             return {"success": False, "message": f"Error: {str(e)}"}
 
+    def get_artist_related_artists(
+        self, artist_id: str, limit: int = 20
+    ) -> Dict[str, Any]:
+        """Retrieve related artists for a specific artist."""
+        logger.info(
+            "artists_controller -- Getting related artists for artist id %s",
+            artist_id,
+        )
+        try:
+            if not self._validate_spotify_id(artist_id):
+                return {
+                    "success": False,
+                    "message": "Invalid artist ID. It must be a valid Spotify ID.",
+                }
+            artists_data = self.artists_client.get_artist_related_artists(artist_id)
+            if artists_data and artists_data.get("artists"):
+                artists: List[Dict[str, Any]] = []
+                for artist in artists_data.get("artists", [])[:limit]:
+                    artist_info = ArtistInfo(
+                        id=artist.get("id", ""),
+                        name=artist.get("name", ""),
+                        genres=artist.get("genres", []),
+                        followers=artist.get("followers", {}).get("total", 0),
+                        popularity=artist.get("popularity", 0),
+                        uri=artist.get("uri", ""),
+                    )
+                    artists.append(artist_info.dict())
+
+                return {
+                    "success": True,
+                    "artists": artists,
+                    "total_artists": len(artists),
+                }
+            return {
+                "success": False,
+                "message": "Could not get related artists",
+            }
+        except Exception as e:
+            logger.error(
+                "Error retrieving related artists for artist %s: %s", artist_id, e
+            )
+            return {"success": False, "message": f"Error: {str(e)}"}
+
     def _validate_spotify_id(self, id_string: str) -> bool:
         """Validates if the string is a valid Spotify ID"""
         return bool(id_string) and len(id_string) > 10 and id_string.isalnum()

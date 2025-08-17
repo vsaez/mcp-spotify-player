@@ -56,3 +56,16 @@ class SpotifyArtistsClient:
             "Response getting top tracks for artist id %s: %s", artist_id, result
         )
         return result
+
+    def get_artist_related_artists(self, artist_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve artists related to a specific artist."""
+        logger.info(
+            "spotify_client -- Getting related artists for artist id %s", artist_id
+        )
+        result = self.requester._make_request(
+            "GET", f"/artists/{artist_id}/related-artists"
+        )
+        logger.debug(
+            "Response getting related artists for artist id %s: %s", artist_id, result
+        )
+        return result

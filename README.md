@@ -16,6 +16,7 @@ Control your Spotify music from Claude using the MCP (Model Context Protocol).
 - **Artist info**: View artist details by ID
 - **Artist albums**: View albums of an artist by ID
 - **Artist top tracks**: View top tracks of an artist by ID
+- **Artist related artists**: View artists related to a given artist by ID
 - **Saved albums**: List albums saved in your library
 - **Check saved albums**: Verify if albums are in your library
 - **Save albums**: Add albums to your library
@@ -123,6 +124,7 @@ After authenticating with Spotify, you can use these commands in your MCP client
 - `get_artist` — "Show info about artist with a given ID"
 - `get_artist_albums` — "Show albums of an artist by ID"
 - `get_artist_top_tracks` — "Show top tracks of an artist by ID"
+- `get_artist_related_artists` — "Show artists related to a given artist by ID"
 - `get_album` — "Show info about album 'The Dark Side of the Moon'"
 - `get_albums` — "Show info about multiple albums"
 - `get_album_tracks` — "Show tracks in album 'The Dark Side of the Moon'"
