@@ -8,7 +8,7 @@ import pytest
 import requests
 
 from mcp_spotify.auth.tokens import Tokens
-from mcp_spotify.errors import RefreshNotPossibleError
+from mcp_spotify.errors import NotAuthenticatedError
 from mcp_spotify_player.client_auth import SpotifyAuthClient
 from mcp_spotify_player.spotify_client import SpotifyClient
 
@@ -68,7 +68,7 @@ def test_request_401_triggers_refresh(tmp_path: Path, monkeypatch: pytest.Monkey
     assert stored["access_token"] == "new"
 
 
-def test_make_request_401_without_refresh_token_raises_clear_error(
+def test_no_refresh_when_no_refresh_token(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     tokens = Tokens("a", "", int(time.time()) + 3600)
@@ -83,9 +83,9 @@ def test_make_request_401_without_refresh_token_raises_clear_error(
     monkeypatch.setattr(requests, "post", fail_post)
 
     client = SpotifyClient(lambda: tokens)
-    with pytest.raises(RefreshNotPossibleError) as exc:
+    with pytest.raises(NotAuthenticatedError) as exc:
         client.playback.get_playback_state()
-    assert "missing refresh_token" in str(exc.value)
+    assert "User token missing" in str(exc.value)
 
 
 def test_refresh_preserves_refresh_token_when_missing_in_response(

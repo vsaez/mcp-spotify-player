@@ -14,7 +14,6 @@ from mcp_spotify.errors import (
     NoActiveDeviceError,
     NotAuthenticatedError,
     PremiumRequiredError,
-    RefreshNotPossibleError,
 )
 from mcp_spotify_player.client_playback import SpotifyPlaybackClient
 from mcp_spotify_player.client_playlists import SpotifyPlaylistsClient
@@ -58,9 +57,9 @@ class SpotifyClient:
         self, method: str, endpoint: str, *, feature: str | None = None, **kwargs
     ):
         tokens = self.tokens_provider()
-        if tokens is None:
-            raise NotAuthenticatedError("Not authenticated with Spotify. Run /auth.")
-        if has_refresh_token(tokens) and needs_refresh(tokens):
+        if tokens is None or not has_refresh_token(tokens):
+            raise NotAuthenticatedError("User token missing. Run /auth.")
+        if needs_refresh(tokens):
             tokens = self._refresh(tokens)
 
         if feature and self.verify_scopes:
@@ -79,9 +78,7 @@ class SpotifyClient:
                 headers["Authorization"] = f"Bearer {tokens.access_token}"
                 response = requests.request(method, url, headers=headers, **kwargs)
             else:
-                raise RefreshNotPossibleError(
-                    "Cannot refresh access token: missing refresh_token in stored credentials."
-                )
+                raise NotAuthenticatedError("User token missing. Run /auth.")
 
         if response.status_code in [200, 201, 204]:
             if method == "PUT" and endpoint == "/me/player/repeat":
