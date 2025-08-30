@@ -73,6 +73,49 @@ Note: dependencies are managed with `pyproject.toml`.
 If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
    `~/.config/mcp_spotify_player/tokens.json` by default.
 
+## ⚡ Quick start
+
+1. Trigger the `/auth` command from your MCP client.
+2. A browser window opens for Spotify login. After approving access you will see a
+   confirmation page from **mcp-spotify-player** with a close button.
+3. Tokens are saved to `tokens.json` (by default under `~/.config/mcp_spotify_player/`).
+4. Back in your client, try a simple command like `get_current_playing` to verify
+   authentication.
+
+### What can I ask Claude?
+
+- `auth`
+- `play_music`
+- `pause_music`
+- `skip_next`
+- `skip_previous`
+- `set_volume`
+- `set_repeat`
+- `get_current_playing`
+- `get_playback_state`
+- `get_devices`
+- `search_music`
+- `search_collections`
+- `get_playlists`
+- `get_playlist_tracks`
+- `get_artist`
+- `get_artist_albums`
+- `get_artist_top_tracks`
+- `get_album`
+- `get_albums`
+- `get_album_tracks`
+- `get_saved_albums`
+- `check_saved_albums`
+- `save_albums`
+- `delete_saved_albums`
+- `create_playlist`
+- `rename_playlist`
+- `clear_playlist`
+- `add_tracks_to_playlist`
+- `queue_add`
+- `queue_list`
+- `diagnose`
+
 ### Token file format
 
 ```json
@@ -95,6 +138,20 @@ If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
   ]
 }
 ```
+
+## User Authentication (PKCE)
+
+The server uses Spotify's PKCE OAuth flow:
+
+1. A random `code_verifier` and its SHA-256 `code_challenge` are created.
+2. Your browser opens the Spotify authorization page.
+3. Spotify redirects back to `http://127.0.0.1:8000/auth/callback` where a local
+   handler completes the flow and displays a confirmation page.
+4. Access and refresh tokens are stored in `tokens.json` and refreshed as needed.
+
+Make sure your Spotify app configuration includes the redirect URI above and the
+required scopes from `env.example`. Set the `SPOTIFY_CLIENT_ID` and, if using
+the confidential flow, `SPOTIFY_CLIENT_SECRET` as environment variables.
 
 ## 🔐 Spotify Configuration
 
@@ -122,6 +179,7 @@ print(f"{name} – {artist}")
 
 After authenticating with Spotify, you can use these commands in your MCP client:
 
+- `auth` — "Authenticate with Spotify via browser"
 - `play_music` — "Play Bohemian Rhapsody"
 - `pause_music` — "Pause the music"
 - `skip_next` — "Next song"
