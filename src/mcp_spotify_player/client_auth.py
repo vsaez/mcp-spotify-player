@@ -1,16 +1,145 @@
+import base64
+import hashlib
 import json
 import os
+import secrets
+import threading
 import time
+import webbrowser
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any, Dict, Optional
+from urllib.parse import parse_qs, urlencode, urlparse, quote
 
 import requests
 
 from mcp_spotify.auth.tokens import Tokens, load_tokens, needs_refresh
-from mcp_spotify_player.config import Config, resolve_tokens_path
+from mcp_spotify.errors import InvalidTokenFileError
+from mcp_spotify_player.config import Config, get_tokens_path
 from mcp_logging import get_logger
 
 logger = get_logger(__name__)
+
+_CODE_VERIFIER: str | None = None
+
+
+def build_authorize_url(scopes: list[str], state: str, pkce: bool) -> str:
+    params = {
+        "client_id": Config.SPOTIFY_CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri": Config.SPOTIFY_REDIRECT_URI,
+        "scope": " ".join(scopes),
+        "state": state,
+    }
+    if pkce:
+        global _CODE_VERIFIER
+        _CODE_VERIFIER = base64.urlsafe_b64encode(
+            secrets.token_bytes(64)
+        ).rstrip(b"=").decode()
+        challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(_CODE_VERIFIER.encode()).digest()
+        ).rstrip(b"=").decode()
+        params["code_challenge"] = challenge
+        params["code_challenge_method"] = "S256"
+    return f"{Config.SPOTIFY_AUTH_URL}?{urlencode(params, quote_via=quote)}"
+
+
+def exchange_code_for_tokens(code: str) -> dict:
+    data = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": Config.SPOTIFY_REDIRECT_URI,
+    }
+    auth = None
+    if Config.SPOTIFY_CLIENT_SECRET:
+        auth = (Config.SPOTIFY_CLIENT_ID, Config.SPOTIFY_CLIENT_SECRET)
+    else:
+        data["client_id"] = Config.SPOTIFY_CLIENT_ID
+        data["code_verifier"] = _CODE_VERIFIER or ""
+    response = requests.post(Config.SPOTIFY_TOKEN_URL, data=data, auth=auth)
+    response.raise_for_status()
+    return response.json()
+
+
+def save_tokens_minimal(tokens: dict) -> None:
+    expires_at = int(time.time()) + int(tokens["expires_in"]) - 60
+    data = {
+        "access_token": tokens["access_token"],
+        "refresh_token": tokens["refresh_token"],
+        "expires_at": expires_at,
+    }
+    path = get_tokens_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(data))
+    try:
+        os.replace(tmp, path)
+    except Exception:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
+def ensure_user_tokens() -> None:
+    path = get_tokens_path()
+    tokens: Tokens | None
+    try:
+        tokens = load_tokens(path)
+    except (InvalidTokenFileError, FileNotFoundError):
+        tokens = None
+    if tokens and tokens.refresh_token:
+        return
+
+    logger.info("No user token found. Launching browser for Spotify OAuth…")
+    state = secrets.token_urlsafe(16)
+    pkce = not Config.SPOTIFY_CLIENT_SECRET
+    url = build_authorize_url(Config.SPOTIFY_SCOPES, state, pkce)
+    webbrowser.open(url)
+
+    parsed = urlparse(Config.SPOTIFY_REDIRECT_URI)
+    host = parsed.hostname or "127.0.0.1"
+    port = parsed.port or 80
+    callback_path = parsed.path
+
+    event = threading.Event()
+    code_holder: dict[str, str] = {}
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802
+            parsed_qs = urlparse(self.path)
+            if parsed_qs.path != callback_path:
+                self.send_response(404)
+                self.end_headers()
+                return
+            params = parse_qs(parsed_qs.query)
+            if params.get("state", [""])[0] != state or "code" not in params:
+                self.send_response(400)
+                self.end_headers()
+                return
+            code_holder["code"] = params["code"][0]
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"Authorization complete. You can close this window.")
+            event.set()
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
+
+        def log_message(self, *args, **kwargs):  # noqa: D401
+            """Silence logging."""
+            return
+
+    httpd = HTTPServer((host, port), Handler)
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    if not event.wait(120):
+        httpd.shutdown()
+        thread.join()
+        raise TimeoutError(
+            "Authorization not completed within timeout. Please try /auth again."
+        )
+    thread.join()
+
+    token_payload = exchange_code_for_tokens(code_holder["code"])
+    save_tokens_minimal(token_payload)
+
 
 
 def try_load_tokens() -> Optional[Tokens]:
@@ -20,7 +149,7 @@ def try_load_tokens() -> Optional[Tokens]:
     is invalid an ``InvalidTokenFileError`` is raised.
     """
 
-    path: Path = resolve_tokens_path()
+    path: Path = get_tokens_path()
     if not path.exists():
         return None
 

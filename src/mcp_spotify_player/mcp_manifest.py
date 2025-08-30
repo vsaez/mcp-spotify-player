@@ -11,6 +11,11 @@ MANIFEST = {
     },
     "tools": [
         {
+            "name": "auth",
+            "description": "Authenticate with Spotify via browser.",
+            "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
             "name": "play_music",
             "description": "Play music on Spotify. You can specify a song, artist, playlist or simply resume playback.",
             "inputSchema": {
