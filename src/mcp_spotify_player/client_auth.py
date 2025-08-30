@@ -8,6 +8,7 @@ import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+import socket
 from typing import Any, Dict, Optional
 from urllib.parse import parse_qs, urlencode, urlparse, quote
 
@@ -135,6 +136,23 @@ def save_tokens_minimal(tokens: dict) -> None:
         raise
 
 
+def _wait_for_server(host: str, port: int, timeout: float = 5.0) -> None:
+    """Poll until a TCP connection to ``host:port`` succeeds.
+
+    Raises ``RuntimeError`` if the server cannot be reached within ``timeout``
+    seconds.
+    """
+
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with socket.create_connection((host, port), timeout=0.2):
+                return
+        except OSError:
+            time.sleep(0.1)
+    raise RuntimeError("Local auth server did not start in time")
+
+
 def ensure_user_tokens() -> None:
     path = get_tokens_path()
     tokens: Tokens | None
@@ -149,7 +167,6 @@ def ensure_user_tokens() -> None:
     state = secrets.token_urlsafe(16)
     pkce = not Config.SPOTIFY_CLIENT_SECRET
     url = build_authorize_url(Config.SPOTIFY_SCOPES, state, pkce)
-    webbrowser.open(url)
 
     parsed = urlparse(Config.SPOTIFY_REDIRECT_URI)
     host = parsed.hostname or "127.0.0.1"
@@ -187,6 +204,16 @@ def ensure_user_tokens() -> None:
     httpd = HTTPServer((host, port), Handler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
+
+    try:
+        _wait_for_server(host, port)
+    except RuntimeError:
+        httpd.shutdown()
+        thread.join()
+        raise
+
+    webbrowser.open(url)
+
     if not event.wait(120):
         httpd.shutdown()
         thread.join()
