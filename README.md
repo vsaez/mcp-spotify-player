@@ -175,6 +175,35 @@ artist = current["item"]["artists"][0]["name"]
 print(f"{name} – {artist}")
 ```
 
+### Configuring MCP Server in PyCharm / IntelliJ
+
+JetBrains IDEs (PyCharm, IntelliJ, etc.) with GitHub Copilot have native support for MCP servers.
+
+1. Go to **File → Settings → GitHub Copilot → Model Context Protocol (MCP)**.
+2. On the right side, click **Configure** to edit the `mcp.json` file.
+3. Add the following snippet, replacing the paths and dummy credentials as needed:
+
+```json
+{
+  "servers": {
+    "spotify-player": {
+      "command": "C:/Users/YourUser/AppData/Local/Programs/Python/Python311/python.exe",
+      "args": ["-m", "mcp_spotify_player"],
+      "cwd": "Z:/projects/mcp/mcp-spotify-player",
+      "env": {
+        "SPOTIFY_CLIENT_ID": "your-client-id",
+        "SPOTIFY_CLIENT_SECRET": "your-client-secret",
+        "SPOTIFY_REDIRECT_URI": "http://127.0.0.1:8000/auth/callback"
+      }
+    }
+  }
+}
+```
+
+Replace `your-client-id` and `your-client-secret` with the credentials from your Spotify Developer Dashboard. **Do not commit your real credentials into version control.**
+
+Once configured, the server will appear in the Copilot Agent inside PyCharm/IntelliJ, and tools like `/auth`, `/play_music`, and `/pause_music` can be invoked directly.
+
 ## 🛠️ Commands
 
 After authenticating with Spotify, you can use these commands in your MCP client:

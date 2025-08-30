@@ -26,22 +26,7 @@ _CODE_VERIFIER: str | None = None
 
 APP_NAME = "mcp-spotify-player"
 GITHUB_URL = "https://github.com/victor-saez-gonzalez/mcp-spotify-player"
-COMMAND_NAMES = [
-    "auth",
-    "play_music",
-    "pause_music",
-    "skip_next",
-    "skip_previous",
-    "search_music",
-    "queue_add",
-    "get_current_playing",
-    "set_volume",
-]
-INITIAL_COMMANDS = [
-    tool["name"]
-    for tool in MANIFEST.get("tools", [])
-    if tool["name"] in COMMAND_NAMES
-]
+ALL_COMMANDS = [tool["name"] for tool in MANIFEST.get("tools", [])]
 WELCOME_TEXT = (
     "You've connected your Spotify account so the MCP tools can control playback, "
     "search tracks, manage playlists and queue."
@@ -49,7 +34,9 @@ WELCOME_TEXT = (
 CLOSE_NOTE = "You can close this window and return to your client."
 
 
-def build_success_page(commands: list[str]) -> str:
+def build_success_page(commands: list[str] | None = None) -> str:
+    if commands is None:
+        commands = ALL_COMMANDS
     items = "\n".join(f"<li><code>{cmd}</code></li>" for cmd in commands)
     return f"""<!DOCTYPE html>
 <html lang=\"en\">
@@ -62,6 +49,8 @@ body{{font-family:sans-serif;max-width:600px;margin:2rem auto;padding:1rem;line-
 h1{{font-size:1.8rem;margin-bottom:1rem}}
 h2{{font-size:1.4rem;margin-top:2rem}}
 a{{color:#1DB954}}
+ul.commands{{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.5rem;list-style:none;padding:0}}
+ul.commands li{{background:#f5f5f5;border-radius:4px;padding:0.25rem 0.5rem}}
 button{{margin-top:1rem;padding:0.5rem 1rem;font-size:1rem}}
 @media (prefers-reduced-motion: reduce){{*{{animation-duration:0s!important;transition:none!important}}}}
 </style>
@@ -70,8 +59,8 @@ button{{margin-top:1rem;padding:0.5rem 1rem;font-size:1rem}}
 <h1>{APP_NAME}</h1>
 <p>{WELCOME_TEXT}</p>
 <p><a href=\"{GITHUB_URL}\">Project on GitHub</a></p>
-<h2>What can I do next?</h2>
-<ul>
+<h2>Available commands</h2>
+<ul class=\"commands\">
 {items}
 </ul>
 <button type=\"button\" onclick=\"window.close()\">Close</button>
@@ -192,7 +181,7 @@ def ensure_user_tokens() -> None:
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
-            html = build_success_page(INITIAL_COMMANDS)
+            html = build_success_page()
             self.wfile.write(html.encode("utf-8"))
             event.set()
             threading.Thread(target=self.server.shutdown, daemon=True).start()

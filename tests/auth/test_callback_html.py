@@ -3,7 +3,7 @@ import threading
 import urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from mcp_spotify_player.client_auth import INITIAL_COMMANDS, build_success_page
+from mcp_spotify_player.client_auth import ALL_COMMANDS, build_success_page
 
 
 def test_callback_serves_html():
@@ -12,7 +12,7 @@ def test_callback_serves_html():
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
-            html = build_success_page(INITIAL_COMMANDS)
+            html = build_success_page()
             self.wfile.write(html.encode("utf-8"))
 
         def log_message(self, *args, **kwargs):
@@ -36,4 +36,4 @@ def test_callback_serves_html():
     assert res.headers["Content-Type"] == "text/html; charset=utf-8"
     assert "mcp-spotify-player" in html
     assert "https://github.com/victor-saez-gonzalez/mcp-spotify-player" in html
-    assert any(cmd in html for cmd in INITIAL_COMMANDS)
+    assert all(cmd in html for cmd in ALL_COMMANDS)
