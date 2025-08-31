@@ -35,20 +35,20 @@ MCP Server for Spotify lets you control your Spotify music from Claude using the
 1. **Clone the repository**:
 
 ```bash
-git clone <your-repository>
-cd mcp-spotify-player
+   git clone <your-repository>
+   cd mcp-spotify-player
 ```
 
 2. **Install**:
 
 ```bash
-pip install .
+  pip install .
 ```
 
 For development:
 
 ```bash
-pip install -e .
+  pip install -e .
 ```
 
 3. **Set up environment variables**:
@@ -73,6 +73,49 @@ Note: dependencies are managed with `pyproject.toml`.
 If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
    `~/.config/mcp_spotify_player/tokens.json` by default.
 
+## ⚡ Quick start
+
+1. Trigger the `/auth` command from your MCP client.
+2. A browser window opens for Spotify login. After approving access you will see a
+   confirmation page from **mcp-spotify-player** with a close button.
+3. Tokens are saved to `tokens.json` (by default under `~/.config/mcp_spotify_player/`).
+4. Back in your client, try a simple command like `get_current_playing` to verify
+   authentication.
+
+### What can I ask Claude?
+
+- `auth`
+- `play_music`
+- `pause_music`
+- `skip_next`
+- `skip_previous`
+- `set_volume`
+- `set_repeat`
+- `get_current_playing`
+- `get_playback_state`
+- `get_devices`
+- `search_music`
+- `search_collections`
+- `get_playlists`
+- `get_playlist_tracks`
+- `get_artist`
+- `get_artist_albums`
+- `get_artist_top_tracks`
+- `get_album`
+- `get_albums`
+- `get_album_tracks`
+- `get_saved_albums`
+- `check_saved_albums`
+- `save_albums`
+- `delete_saved_albums`
+- `create_playlist`
+- `rename_playlist`
+- `clear_playlist`
+- `add_tracks_to_playlist`
+- `queue_add`
+- `queue_list`
+- `diagnose`
+
 ### Token file format
 
 ```json
@@ -96,6 +139,20 @@ If `MCP_SPOTIFY_TOKENS_PATH` is not set, tokens will be stored in
 }
 ```
 
+## User Authentication (PKCE)
+
+The server uses Spotify's PKCE OAuth flow:
+
+1. A random `code_verifier` and its SHA-256 `code_challenge` are created.
+2. Your browser opens the Spotify authorization page.
+3. Spotify redirects back to `http://127.0.0.1:8000/auth/callback` where a local
+   handler completes the flow and displays a confirmation page.
+4. Access and refresh tokens are stored in `tokens.json` and refreshed as needed.
+
+Make sure your Spotify app configuration includes the redirect URI above and the
+required scopes from `env.example`. Set the `SPOTIFY_CLIENT_ID` and, if using
+the confidential flow, `SPOTIFY_CLIENT_SECRET` as environment variables.
+
 ## 🔐 Spotify Configuration
 
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
@@ -118,11 +175,110 @@ artist = current["item"]["artists"][0]["name"]
 print(f"{name} – {artist}")
 ```
 
-## 🛠️ Commands
+## Integration with Claude
 
-After authenticating with Spotify, you can use these commands in your MCP client:
+This section consolidates everything needed to integrate the MCP stdio server with Claude (Anthropic). It explains configuration for Claude Desktop and other MCP-compatible clients, how to authenticate, example commands, and troubleshooting notes.
 
-- `play_music` — "Play Bohemian Rhapsody"
+### Overview
+
+- Recommended server command: `python -m mcp_spotify_player` (JSON-RPC over stdio).
+- If Claude cannot find a tokens file and the server attempts to open a browser, configure the MCP server inside Claude/Claude Desktop with proper environment variables prior to running `/auth`.
+
+### Claude Desktop configuration
+
+1. Open Claude Desktop → Settings → MCP Servers
+2. Add a server configuration (e.g. `claude-desktop-config.json`) with these fields:
+   - `command`: path to your Python interpreter
+   - `args`: ["-m", "mcp_spotify_player"]
+   - `cwd`: project path (e.g. "Z:/projects/mcp/mcp-spotify-player")
+   - `env`: SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI
+
+Example JSON:
+
+```json
+{
+  "mcpServers": {
+    "spotify-player": {
+      "command": "path_to_your_python",
+      "args": ["-m", "mcp_spotify_player"],
+      "cwd": "Z:/projects/mcp/mcp-spotify-player",
+      "env": {
+        "SPOTIFY_CLIENT_ID": "your_actual_client_id",
+        "SPOTIFY_CLIENT_SECRET": "your_actual_client_secret",
+        "SPOTIFY_REDIRECT_URI": "http://127.0.0.1:8000/auth/callback"
+      },
+      "description": "MCP server to control Spotify"
+    }
+  }
+}
+```
+
+> Do not commit real credentials to the repository.
+
+
+### Configuring MCP Server in PyCharm / IntelliJ
+
+JetBrains IDEs (PyCharm, IntelliJ, etc.) with GitHub Copilot have native support for MCP servers.
+
+1. Go to **File → Settings → GitHub Copilot → Model Context Protocol (MCP)**.
+2. On the right side, click **Configure** to edit the `mcp.json` file.
+3. Add the following snippet, replacing the paths and dummy credentials as needed:
+
+```json
+{
+  "servers": {
+    "spotify-player": {
+      "command": "C:/Users/YourUser/AppData/Local/Programs/Python/Python311/python.exe",
+      "args": ["-m", "mcp_spotify_player"],
+      "cwd": "Z:/projects/mcp/mcp-spotify-player",
+      "env": {
+        "SPOTIFY_CLIENT_ID": "your-client-id",
+        "SPOTIFY_CLIENT_SECRET": "your-client-secret",
+        "SPOTIFY_REDIRECT_URI": "http://127.0.0.1:8000/auth/callback"
+      }
+    }
+  }
+}
+```
+
+Replace `your-client-id` and `your-client-secret` with the credentials from your Spotify Developer Dashboard. **Do not commit your real credentials into version control.**
+
+Once configured, the server will appear in the Copilot Agent inside PyCharm/IntelliJ, and tools like `/auth`, `/play_music`, and `/pause_music` can be invoked directly.
+
+
+### Other MCP clients
+
+Use `mcp-spotify-player.yaml` as a template (same fields: command, args, cwd, env).
+
+### Authentication flow
+
+- Start the server manually to verify: `python -m mcp_spotify_player`.
+- From Claude run `/auth` (or `auth`) to start the authorization flow.
+- Tokens are saved by default to `~/.config/mcp_spotify_player/tokens.json` (or the path in `MCP_SPOTIFY_TOKENS_PATH`).
+
+### Troubleshooting
+
+- "Server not found" / timeout: check the server is running and `cwd` is correct in Claude's configuration.
+- "Authentication required": run `/auth` in Claude after configuring the server.
+- "Invalid credentials": verify environment variables and redirect URI in your Spotify app.
+- MCP timeout (-32001): ensure you configured the command as `python -m mcp_spotify_player` (stdio) and restart Claude after changes.
+- Browser not responding: the stdio server does not use HTTP; do not expect an HTTP server to be reachable from Claude.
+
+### Example usage
+
+User: "Play REM"
+Claude: [play_music with query="REM"]
+
+User: "Pause the music"
+Claude: [pause_music]
+
+User: "Set volume to 80%"
+Claude: [set_volume with volume_percent=80]
+
+User: "What's playing now?"
+Claude: [get_current_playing]
+
+- `play_music` — "Play Where Is My Mind by The Pixies"
 - `pause_music` — "Pause the music"
 - `skip_next` — "Next song"
 - `skip_previous` — "Previous song"
@@ -152,6 +308,7 @@ After authenticating with Spotify, you can use these commands in your MCP client
 - `queue_add` — "Add this track to the queue"
 - `queue_list` — "Show the upcoming queue"
 - `diagnose` — "Display diagnostic information"
+
 
 ### Prompt Examples
 

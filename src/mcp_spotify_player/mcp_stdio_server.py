@@ -5,11 +5,11 @@ Implements the MCP protocol over JSON-RPC for communication with MCP clients
 """
 
 import json
+import platform
 import sys
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
-import platform
 
 from mcp_logging import get_logger
 
@@ -17,8 +17,8 @@ import mcp_spotify_player
 
 from mcp_spotify.auth.tokens import Tokens
 from mcp_spotify.errors import InvalidTokenFileError, McpUserError, UserAuthRequiredError
-from mcp_spotify_player.client_auth import try_load_tokens
-from mcp_spotify_player.config import Config, resolve_tokens_path
+from mcp_spotify_player.client_auth import ensure_user_tokens, try_load_tokens
+from mcp_spotify_player.config import Config, get_tokens_path
 from mcp_spotify_player.mcp_manifest import MANIFEST
 from mcp_spotify_player.spotify_controller import SpotifyController
 
@@ -31,6 +31,13 @@ class MCPServer:
         self.config = Config()
 
         try:
+            ensure_user_tokens()
+        except TimeoutError:
+            raise UserAuthRequiredError(
+                "Authorization not completed within timeout. Please try /auth again."
+            )
+
+        try:
             tokens = try_load_tokens()
         except InvalidTokenFileError as e:
             logger.error(str(e))
@@ -38,7 +45,7 @@ class MCPServer:
 
         if tokens is None or not tokens.refresh_token:
             raise UserAuthRequiredError(
-                "No user token found. Run the OAuth authorization code flow to obtain a refresh_token. Client credentials are not sufficient for playback."
+                "No user token found. Run /auth."
             )
 
         self.current_tokens: Tokens = tokens
@@ -83,6 +90,7 @@ class MCPServer:
             "diagnose": self._diagnose,
             "queue_add": self.controller.playback.queue_add,
             "queue_list": self.controller.playback.queue_list,
+            "auth": self._auth,
         }
 
         # Optional validators and result formatters
@@ -229,7 +237,7 @@ class MCPServer:
             return f"Error: {str(e)}"
 
     def _diagnose(self) -> str:
-        path = resolve_tokens_path()
+        path = get_tokens_path()
         lines: list[str] = [f"tokens_path: {path}"]
         try:
             tokens = try_load_tokens()
@@ -257,6 +265,15 @@ class MCPServer:
         lines.append(f"python: {platform.python_version()}")
         lines.append(f"package: {mcp_spotify_player.__version__}")
         return "\n".join(lines)
+
+    def _auth(self) -> str:
+        ensure_user_tokens()
+        messages = [
+            "Opening the browser for Spotify login…",
+            "Received authorization code, exchanging for tokens…",
+            "Done. Tokens saved.",
+        ]
+        return "\n".join(messages)
 
     # -----------------------
     # Validators

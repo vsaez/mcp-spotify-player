@@ -1,16 +1,219 @@
+import base64
+import hashlib
 import json
 import os
+import secrets
+import threading
 import time
+import webbrowser
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+import socket
 from typing import Any, Dict, Optional
+from urllib.parse import parse_qs, urlencode, urlparse, quote
 
 import requests
 
 from mcp_spotify.auth.tokens import Tokens, load_tokens, needs_refresh
-from mcp_spotify_player.config import Config, resolve_tokens_path
+from mcp_spotify.errors import InvalidTokenFileError
+from mcp_spotify_player.config import Config, get_tokens_path
+from mcp_spotify_player.mcp_manifest import MANIFEST
 from mcp_logging import get_logger
 
 logger = get_logger(__name__)
+
+_CODE_VERIFIER: str | None = None
+
+APP_NAME = "mcp-spotify-player"
+GITHUB_URL = "https://github.com/victor-saez-gonzalez/mcp-spotify-player"
+ALL_COMMANDS = [tool["name"] for tool in MANIFEST.get("tools", [])]
+WELCOME_TEXT = (
+    "You've connected your Spotify account so the MCP tools can control playback, "
+    "search tracks, manage playlists and queue."
+)
+CLOSE_NOTE = "You can close this window and return to your client."
+
+
+def build_success_page(commands: list[str] | None = None) -> str:
+    if commands is None:
+        commands = ALL_COMMANDS
+    items = "\n".join(f"<li><code>{cmd}</code></li>" for cmd in commands)
+    return f"""<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+<meta charset=\"utf-8\" />
+<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+<title>{APP_NAME}</title>
+<style>
+body{{font-family:sans-serif;max-width:600px;margin:2rem auto;padding:1rem;line-height:1.6;background:#fff;color:#111}}
+h1{{font-size:1.8rem;margin-bottom:1rem}}
+h2{{font-size:1.4rem;margin-top:2rem}}
+a{{color:#1DB954}}
+ul.commands{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.5rem;list-style:none;padding:0}}
+ul.commands li{{background:#f5f5f5;border-radius:4px;padding:0.25rem 0.5rem}}
+button{{margin-top:1rem;padding:0.5rem 1rem;font-size:1rem}}
+@media (prefers-reduced-motion: reduce){{*{{animation-duration:0s!important;transition:none!important}}}}
+</style>
+</head>
+<body>
+<h1>{APP_NAME}</h1>
+<p>{WELCOME_TEXT}</p>
+<p><a href=\"{GITHUB_URL}\">Project on GitHub</a></p>
+<h2>Available commands</h2>
+<ul class=\"commands\">
+{items}
+</ul>
+<button type=\"button\" onclick=\"window.close()\">Close</button>
+<p>{CLOSE_NOTE}</p>
+</body>
+</html>"""
+
+
+def build_authorize_url(scopes: list[str], state: str, pkce: bool) -> str:
+    params = {
+        "client_id": Config.SPOTIFY_CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri": Config.SPOTIFY_REDIRECT_URI,
+        "scope": " ".join(scopes),
+        "state": state,
+    }
+    if pkce:
+        global _CODE_VERIFIER
+        _CODE_VERIFIER = base64.urlsafe_b64encode(
+            secrets.token_bytes(64)
+        ).rstrip(b"=").decode()
+        challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(_CODE_VERIFIER.encode()).digest()
+        ).rstrip(b"=").decode()
+        params["code_challenge"] = challenge
+        params["code_challenge_method"] = "S256"
+    return f"{Config.SPOTIFY_AUTH_URL}?{urlencode(params, quote_via=quote)}"
+
+
+def exchange_code_for_tokens(code: str) -> dict:
+    data = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": Config.SPOTIFY_REDIRECT_URI,
+    }
+    auth = None
+    if Config.SPOTIFY_CLIENT_SECRET:
+        auth = (Config.SPOTIFY_CLIENT_ID, Config.SPOTIFY_CLIENT_SECRET)
+    else:
+        data["client_id"] = Config.SPOTIFY_CLIENT_ID
+        data["code_verifier"] = _CODE_VERIFIER or ""
+    response = requests.post(Config.SPOTIFY_TOKEN_URL, data=data, auth=auth)
+    response.raise_for_status()
+    return response.json()
+
+
+def save_tokens_minimal(tokens: dict) -> None:
+    expires_at = int(time.time()) + int(tokens["expires_in"]) - 60
+    data = {
+        "access_token": tokens["access_token"],
+        "refresh_token": tokens["refresh_token"],
+        "expires_at": expires_at,
+    }
+    path = get_tokens_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(data))
+    try:
+        os.replace(tmp, path)
+    except Exception:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
+def _wait_for_server(host: str, port: int, timeout: float = 5.0) -> None:
+    """Poll until a TCP connection to ``host:port`` succeeds.
+
+    Raises ``RuntimeError`` if the server cannot be reached within ``timeout``
+    seconds.
+    """
+
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with socket.create_connection((host, port), timeout=0.2):
+                return
+        except OSError:
+            time.sleep(0.1)
+    raise RuntimeError("Local auth server did not start in time")
+
+
+def ensure_user_tokens() -> None:
+    path = get_tokens_path()
+    tokens: Tokens | None
+    try:
+        tokens = load_tokens(path)
+    except (InvalidTokenFileError, FileNotFoundError):
+        tokens = None
+    if tokens and tokens.refresh_token:
+        return
+
+    logger.info("No user token found. Launching browser for Spotify OAuth…")
+    state = secrets.token_urlsafe(16)
+    pkce = not Config.SPOTIFY_CLIENT_SECRET
+    url = build_authorize_url(Config.SPOTIFY_SCOPES, state, pkce)
+
+    parsed = urlparse(Config.SPOTIFY_REDIRECT_URI)
+    host = parsed.hostname or "127.0.0.1"
+    port = parsed.port or 80
+    callback_path = parsed.path
+
+    event = threading.Event()
+    code_holder: dict[str, str] = {}
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802
+            parsed_qs = urlparse(self.path)
+            if parsed_qs.path != callback_path:
+                self.send_response(404)
+                self.end_headers()
+                return
+            params = parse_qs(parsed_qs.query)
+            if params.get("state", [""])[0] != state or "code" not in params:
+                self.send_response(400)
+                self.end_headers()
+                return
+            code_holder["code"] = params["code"][0]
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            html = build_success_page()
+            self.wfile.write(html.encode("utf-8"))
+            event.set()
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
+
+        def log_message(self, *args, **kwargs):  # noqa: D401
+            """Silence logging."""
+            return
+
+    httpd = HTTPServer((host, port), Handler)
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+
+    try:
+        _wait_for_server(host, port)
+    except RuntimeError:
+        httpd.shutdown()
+        thread.join()
+        raise
+
+    webbrowser.open(url)
+
+    if not event.wait(120):
+        httpd.shutdown()
+        thread.join()
+        raise TimeoutError(
+            "Authorization not completed within timeout. Please try /auth again."
+        )
+    thread.join()
+
+    token_payload = exchange_code_for_tokens(code_holder["code"])
+    save_tokens_minimal(token_payload)
+
 
 
 def try_load_tokens() -> Optional[Tokens]:
@@ -20,7 +223,7 @@ def try_load_tokens() -> Optional[Tokens]:
     is invalid an ``InvalidTokenFileError`` is raised.
     """
 
-    path: Path = resolve_tokens_path()
+    path: Path = get_tokens_path()
     if not path.exists():
         return None
 

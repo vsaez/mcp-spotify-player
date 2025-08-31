@@ -7,30 +7,31 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def resolve_tokens_path() -> Path:
+def get_tokens_path() -> Path:
     """Return the path where OAuth tokens are stored.
 
-    If the ``MCP_SPOTIFY_TOKENS_PATH`` environment variable is set it is
-    expanded and returned. Otherwise the default path is
-    ``~/.config/mcp_spotify_player/tokens.json``. The parent directory is
-    created if it does not already exist.
+    The location can be overridden via the ``MCP_SPOTIFY_TOKENS_PATH``
+    environment variable. The file itself is not created by this function.
     """
 
     env_path = os.getenv("MCP_SPOTIFY_TOKENS_PATH")
     if env_path:
-        path = Path(env_path).expanduser().resolve()
-    else:
-        path = Path("~/.config/mcp_spotify_player/tokens.json").expanduser()
-    # Ensure the parent directory exists but do not create the file itself
-    path.parent.mkdir(parents=True, exist_ok=True)
-    return path
+        return Path(env_path).expanduser().resolve()
+    return Path("~/.config/mcp_spotify_player/tokens.json").expanduser()
+
+
+# Backwards compatibility
+def resolve_tokens_path() -> Path:  # pragma: no cover - legacy alias
+    return get_tokens_path()
 
 
 class Config:
     # Spotify API Configuration
     SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
     SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-    SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "http://localhost:8000/auth/callback")
+    SPOTIFY_REDIRECT_URI = os.getenv(
+        "SPOTIFY_REDIRECT_URI", "http://127.0.0.1:8000/auth/callback"
+    )
 
     # Server Configuration
     PORT = int(os.getenv("PORT", 8000))
