@@ -1,6 +1,12 @@
 import json
 import os
 import time
+import http.server
+import socket
+import threading
+import urllib.parse
+import secrets
+import webbrowser
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -187,3 +193,66 @@ class SpotifyAuthClient:
             except Exception:
                 logger.debug("Error for %s: %s", endpoint, response)
                 return {"error": response.text}
+
+
+class OAuthFlow:
+    """Handles the local OAuth authorization flow."""
+
+    def __init__(self, client: SpotifyAuthClient):
+        self._client = client
+        self._in_progress = False
+        self._server: http.server.HTTPServer | None = None
+        self._thread: threading.Thread | None = None
+
+    def start(self) -> str:
+        """Start the OAuth flow if not already running."""
+
+        if self._in_progress:
+            return "Authentication already in progress"
+
+        self._in_progress = True
+
+        redirect = urllib.parse.urlparse(self._client.config.SPOTIFY_REDIRECT_URI)
+        host = redirect.hostname or "localhost"
+        port = redirect.port or 8000
+        callback_path = redirect.path
+
+        flow = self
+
+        class CallbackHandler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self) -> None:  # noqa: D401 - short method
+                if self.path.startswith(callback_path):
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html")
+                    self.end_headers()
+                    self.wfile.write(b"Authentication successful. You may close this window.")
+                    threading.Thread(target=self.server.shutdown, daemon=True).start()
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+
+            def log_message(self, format: str, *args: Any) -> None:  # pragma: no cover - noisy
+                return
+
+        def run_server() -> None:
+            with http.server.HTTPServer((host, port), CallbackHandler) as httpd:
+                flow._server = httpd
+                httpd.serve_forever()
+            flow._in_progress = False
+
+        self._thread = threading.Thread(target=run_server, daemon=True)
+        self._thread.start()
+
+        for _ in range(50):
+            try:
+                with socket.create_connection((host, port), timeout=0.1):
+                    break
+            except OSError:
+                time.sleep(0.1)
+
+        auth_url = self._client.get_auth_url()
+        webbrowser.open(auth_url)
+        return "Opened browser for authentication"
+
+    def in_progress(self) -> bool:
+        return self._in_progress

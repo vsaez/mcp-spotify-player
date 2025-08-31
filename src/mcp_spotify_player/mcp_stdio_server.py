@@ -16,8 +16,8 @@ from mcp_logging import get_logger
 import mcp_spotify_player
 
 from mcp_spotify.auth.tokens import Tokens
-from mcp_spotify.errors import InvalidTokenFileError, McpUserError, UserAuthRequiredError
-from mcp_spotify_player.client_auth import try_load_tokens
+from mcp_spotify.errors import InvalidTokenFileError, McpUserError
+from mcp_spotify_player.client_auth import OAuthFlow, SpotifyAuthClient, try_load_tokens
 from mcp_spotify_player.config import Config, resolve_tokens_path
 from mcp_spotify_player.mcp_manifest import MANIFEST
 from mcp_spotify_player.spotify_controller import SpotifyController
@@ -36,23 +36,25 @@ class MCPServer:
             logger.error(str(e))
             raise
 
-        if tokens is None or not tokens.refresh_token:
-            raise UserAuthRequiredError(
-                "No user token found. Run the OAuth authorization code flow to obtain a refresh_token. Client credentials are not sufficient for playback."
-            )
-
-        self.current_tokens: Tokens = tokens
+        self.current_tokens: Tokens | None = (
+            tokens if tokens and tokens.refresh_token else None
+        )
+        if self.current_tokens is None:
+            logger.info("No user token found. Run the /auth tool to authenticate with Spotify.")
 
         def tokens_provider() -> Optional[Tokens]:
             return self.current_tokens
 
         self.controller = SpotifyController(tokens_provider)
+        self.auth_client = SpotifyAuthClient()
+        self.oauth_flow = OAuthFlow(self.auth_client)
         self.request_id = 0
         # MCP Manifest
         self.manifest = MANIFEST
 
         # Tool dispatch configuration
         self.TOOL_HANDLERS = {
+            "auth": self._auth,
             "play_music": self.controller.playback.play_music,
             "pause_music": self.controller.playback.pause_music,
             "skip_next": self.controller.playback.skip_next,
@@ -130,6 +132,11 @@ class MCPServer:
             "delete_saved_albums": self._format_json_result,
             "queue_list": self._format_json_result,
         }
+
+    def _auth(self, **_args: Any) -> str:
+        """Trigger the OAuth authorization flow."""
+
+        return self.oauth_flow.start()
 
     def send_response(self, response: Dict[str, Any]):
         """Send a JSON-RPC response over stdout"""
