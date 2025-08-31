@@ -35,5 +35,5 @@ def test_callback_serves_html():
     assert res.status == 200
     assert res.headers["Content-Type"] == "text/html; charset=utf-8"
     assert "mcp-spotify-player" in html
-    assert "https://github.com/victor-saez-gonzalez/mcp-spotify-player" in html
+    assert "https://github.com/vsaez/mcp-spotify-player" in html
     assert all(cmd in html for cmd in ALL_COMMANDS)
