@@ -25,7 +25,7 @@ logger = get_logger(__name__)
 _CODE_VERIFIER: str | None = None
 
 APP_NAME = "mcp-spotify-player"
-GITHUB_URL = "https://github.com/victor-saez-gonzalez/mcp-spotify-player"
+GITHUB_URL = "https://github.com/vsaez/mcp-spotify-player"
 ALL_COMMANDS = [tool["name"] for tool in MANIFEST.get("tools", [])]
 WELCOME_TEXT = (
     "You've connected your Spotify account so the MCP tools can control playback, "

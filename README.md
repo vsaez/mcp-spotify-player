@@ -3,10 +3,10 @@
 
 <div align="center">
 
-[![GitHub Stars](https://img.shields.io/github/stars/victor-saez-gonzalez/mcp-spotify-player?style=social)](https://github.com/victor-saez-gonzalez/mcp-spotify-player/stargazers)
-[![License](https://img.shields.io/github/license/victor-saez-gonzalez/mcp-spotify-player)](https://github.com/victor-saez-gonzalez/mcp-spotify-player/blob/main/LICENSE)
-[![Issues](https://img.shields.io/github/issues/victor-saez-gonzalez/mcp-spotify-player)](https://github.com/victor-saez-gonzalez/mcp-spotify-player/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/victor-saez-gonzalez/mcp-spotify-player)](https://github.com/victor-saez-gonzalez/mcp-spotify-player/pulls)
+[![GitHub Stars](https://img.shields.io/github/stars/vsaez/mcp-spotify-player?style=social)](https://github.com/vsaez/mcp-spotify-player/stargazers)
+[![License](https://img.shields.io/github/license/vsaez/mcp-spotify-player)](https://github.com/vsaez/mcp-spotify-player/blob/main/LICENSE)
+[![Issues](https://img.shields.io/github/issues/vsaez/mcp-spotify-player)](https://github.com/vsaez/mcp-spotify-player/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/vsaez/mcp-spotify-player)](https://github.com/vsaez/mcp-spotify-player/pulls)
 
 **Control Spotify directly from your AI assistant using the Model Context Protocol**
 
@@ -692,7 +692,7 @@ in the Software without restriction...
 
 - **Author**: Víctor Sáez
 - **Email**: [victor.saez.dev@gmail.com](mailto:victor.saez.dev@gmail.com)
-- **Issues**: [GitHub Issues](https://github.com/victor-saez-gonzalez/mcp-spotify-player/issues)
+- **Issues**: [GitHub Issues](https://github.com/vsaez/mcp-spotify-player/issues)
 
 ---
 
