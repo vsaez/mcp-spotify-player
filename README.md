@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/vsaez-mcp-spotify-player-badge.png)](https://mseep.ai/app/vsaez-mcp-spotify-player)
+
 <a id="mcp-spotify-player"></a>
 # 🎵 MCP Spotify Player
 
