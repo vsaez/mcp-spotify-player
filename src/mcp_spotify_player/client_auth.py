@@ -49,7 +49,7 @@ body{{font-family:sans-serif;max-width:600px;margin:2rem auto;padding:1rem;line-
 h1{{font-size:1.8rem;margin-bottom:1rem}}
 h2{{font-size:1.4rem;margin-top:2rem}}
 a{{color:#1DB954}}
-ul.commands{{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.5rem;list-style:none;padding:0}}
+ul.commands{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.5rem;list-style:none;padding:0}}
 ul.commands li{{background:#f5f5f5;border-radius:4px;padding:0.25rem 0.5rem}}
 button{{margin-top:1rem;padding:0.5rem 1rem;font-size:1rem}}
 @media (prefers-reduced-motion: reduce){{*{{animation-duration:0s!important;transition:none!important}}}}
