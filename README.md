@@ -19,7 +19,7 @@
 <p align="center">
   <img src="/docs/media/hero.gif" alt="Play → Queue → Volume → Now Playing con MCP" />
 </p>
-<p align="center"><em>Control Spotify from your assistant (Claude/Cursor/Void).</em></p>
+<p align="center"><em>Control Spotify from your assistant (Claude/Cursor/Void/IntelliJ).</em></p>
 
 ## 📖 Table of Contents
 
