@@ -3,10 +3,15 @@
 
 <div align="center">
 
+[![CI](https://github.com/vsaez/mcp-spotify-player/actions/workflows/ci.yml/badge.svg)](https://github.com/vsaez/mcp-spotify-player/actions)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+[![Release](https://img.shields.io/github/v/release/vsaez/mcp-spotify-player)](https://github.com/vsaez/mcp-spotify-player/releases)
+[![Last commit](https://img.shields.io/github/last-commit/vsaez/mcp-spotify-player)](https://github.com/vsaez/mcp-spotify-player/commits/main)
 [![GitHub Stars](https://img.shields.io/github/stars/vsaez/mcp-spotify-player?style=social)](https://github.com/vsaez/mcp-spotify-player/stargazers)
 [![License](https://img.shields.io/github/license/vsaez/mcp-spotify-player)](https://github.com/vsaez/mcp-spotify-player/blob/main/LICENSE)
 [![Issues](https://img.shields.io/github/issues/vsaez/mcp-spotify-player)](https://github.com/vsaez/mcp-spotify-player/issues)
 [![Pull Requests](https://img.shields.io/github/issues-pr/vsaez/mcp-spotify-player)](https://github.com/vsaez/mcp-spotify-player/pulls)
+
 
 **Control Spotify directly from your AI assistant using the Model Context Protocol**
 
