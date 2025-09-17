@@ -1,0 +1,53 @@
+{
+  "BadRequest": {
+    "code": "BadRequest",
+    "httpHint": 400,
+    "retryable": false,
+    "description": "Invalid or incomplete parameters after core-level validation.",
+    "data": {
+      "schemaRef": "#/$defs/validation"
+    }
+  },
+  "Unauthorized": {
+    "code": "Unauthorized",
+    "httpHint": 401,
+    "retryable": false,
+    "description": "The adapter indicates the user is unauthenticated or the token expired."
+  },
+  "Forbidden": {
+    "code": "Forbidden",
+    "httpHint": 403,
+    "retryable": false,
+    "description": "The authenticated user lacks required permissions or scopes for the action.",
+    "data": {
+      "schemaRef": "#/$defs/authorization"
+    }
+  },
+  "NotFound": {
+    "code": "NotFound",
+    "httpHint": 404,
+    "retryable": false,
+    "description": "The requested resource (e.g., device, playlist, track) does not exist or is not visible."
+  },
+  "Conflict": {
+    "code": "Conflict",
+    "httpHint": 409,
+    "retryable": false,
+    "description": "Inconsistent state detected by the core or Spotify (e.g., concurrent playback)."
+  },
+  "RateLimited": {
+    "code": "RateLimited",
+    "httpHint": 429,
+    "retryable": true,
+    "description": "The operation exceeded quotas enforced by Spotify or internal policies.",
+    "data": {
+      "schemaRef": "#/$defs/rate-limit"
+    }
+  },
+  "Internal": {
+    "code": "Internal",
+    "httpHint": 500,
+    "retryable": true,
+    "description": "Unexpected error within the core or failure reported by dependent services."
+  }
+}
