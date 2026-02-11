@@ -87,6 +87,7 @@ class MCPServer:
             "clear_playlist": self.controller.playlists.clear_playlist,
             "create_playlist": self.controller.playlists.create_playlist,
             "add_tracks_to_playlist": self.controller.playlists.add_tracks_to_playlist,
+            "reorder_playlist_tracks": self.controller.playlists.reorder_playlist_tracks,
             "diagnose": self._diagnose,
             "queue_add": self.controller.playback.queue_add,
             "queue_list": self.controller.playback.queue_list,
@@ -114,6 +115,7 @@ class MCPServer:
             "clear_playlist": self._validate_clear_playlist,
             "create_playlist": self._validate_create_playlist,
             "add_tracks_to_playlist": self._validate_add_tracks_to_playlist,
+            "reorder_playlist_tracks": self._validate_reorder_playlist_tracks,
             "queue_add": self._validate_queue_add,
             "queue_list": self._validate_queue_list,
         }
@@ -449,6 +451,15 @@ class MCPServer:
     def _validate_add_tracks_to_playlist(self, arguments: Dict[str, Any]):
         if not arguments.get("playlist_id") or not arguments.get("track_uris"):
             raise ValueError("playlist_id and track_uris are required")
+
+    def _validate_reorder_playlist_tracks(self, arguments: Dict[str, Any]):
+        if not arguments.get("playlist_id"):
+            raise ValueError("playlist_id is required")
+        if arguments.get("range_start") is None:
+            raise ValueError("range_start is required")
+        if arguments.get("insert_before") is None:
+            raise ValueError("insert_before is required")
+        arguments.setdefault("range_length", 1)
 
     def _validate_queue_add(self, args: dict) -> None:
         """Validate input for the queue_add tool."""
