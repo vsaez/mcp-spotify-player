@@ -81,3 +81,25 @@ class SpotifyPlaylistsClient:
         )
         logger.debug("Response adding tracks to playlist %s: %s", playlist_id, result)
         return result is not None
+
+    def reorder_playlist_tracks(
+        self,
+        playlist_id: str,
+        range_start: int,
+        insert_before: int,
+        range_length: int = 1,
+    ) -> bool:
+        """Reorder tracks in a playlist"""
+        logger.info("spotify_client -- Reordering tracks in playlist %s", playlist_id)
+        result = self.requester._make_request(
+            'PUT',
+            f'/playlists/{playlist_id}/tracks',
+            feature='playlists',
+            json={
+                'range_start': range_start,
+                'insert_before': insert_before,
+                'range_length': range_length,
+            },
+        )
+        logger.debug("Response reordering tracks in playlist %s: %s", playlist_id, result)
+        return result is not None

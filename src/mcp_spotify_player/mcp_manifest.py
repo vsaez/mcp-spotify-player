@@ -504,6 +504,40 @@ MANIFEST = {
             }
         },
         {
+            "name": "reorder_playlist_tracks",
+            "description": "Reorder tracks in a Spotify playlist. Moves a range of tracks to a new position.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "playlist_id": {
+                        "type": "string",
+                        "description": "Spotify playlist ID"
+                    },
+                    "range_start": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "The position of the first track to be reordered (zero-indexed)"
+                    },
+                    "insert_before": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "The position where the tracks should be inserted (zero-indexed)"
+                    },
+                    "range_length": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "default": 1,
+                        "description": "The number of tracks to be reordered (default: 1)"
+                    }
+                },
+                "required": [
+                    "playlist_id",
+                    "range_start",
+                    "insert_before"
+                ]
+            }
+        },
+        {
             "name": "diagnose",
             "description": "Display diagnostic information about authentication and environment",
             "inputSchema": {"type": "object", "properties": {}}

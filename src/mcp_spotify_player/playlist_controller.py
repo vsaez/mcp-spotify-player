@@ -134,6 +134,28 @@ class PlaylistController:
         except Exception as e:
             return {'success': False, 'message': f'Error: {str(e)}'}
 
+    def reorder_playlist_tracks(
+        self, playlist_id: str, range_start: int, insert_before: int, range_length: int = 1
+    ) -> Dict[str, Any]:
+        """Reorder tracks in a playlist"""
+        try:
+            if not self._validate_spotify_id(playlist_id):
+                return {'success': False, 'message': 'Invalid playlist ID. It must be a valid Spotify ID.'}
+            if not isinstance(range_start, int) or range_start < 0:
+                return {'success': False, 'message': 'range_start must be a non-negative integer.'}
+            if not isinstance(insert_before, int) or insert_before < 0:
+                return {'success': False, 'message': 'insert_before must be a non-negative integer.'}
+            if not isinstance(range_length, int) or range_length < 1:
+                return {'success': False, 'message': 'range_length must be a positive integer.'}
+            result = self.playlists_client.reorder_playlist_tracks(
+                playlist_id, range_start, insert_before, range_length
+            )
+            if result:
+                return {'success': True, 'message': 'Playlist tracks reordered successfully'}
+            return {'success': False, 'message': 'Could not reorder playlist tracks'}
+        except Exception as e:
+            return {'success': False, 'message': f'Error: {str(e)}'}
+
     def _validate_spotify_id(self, id_string: str) -> bool:
         """Validates if the string is a valid Spotify ID"""
         return bool(id_string) and len(id_string) > 10 and all(c.isalnum() for c in id_string)
